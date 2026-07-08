@@ -16,27 +16,49 @@
 <meta name="theme-color" content="#1f7a5c">
 </head>
 <body>
-
 <div class="phone">
   <main class="content">
 
+    <!-- Hero -->
     <section class="hero-card">
-      <p class="hero-date" id="hero-date">Carregando...</p>
-      <h1 id="hero-greeting">💚</h1>
+      <div class="hero-top">
+        <div>
+          <p class="hero-date" id="hero-date"></p>
+          <h1 class="hero-greeting" id="hero-greeting">💚</h1>
+        </div>
+        <div class="hero-days" id="hero-days"></div>
+      </div>
+      <p class="hero-frase" id="hero-frase"></p>
     </section>
 
+    <!-- Próximos eventos -->
     <section class="block">
       <div class="block-header">
-        <h2>Próximo encontro</h2>
-        <a href="agenda.html" class="link-sm">Ver agenda →</a>
+        <h2>📅 Próximos eventos</h2>
+        <a href="agenda.html" class="link-sm">Ver todos →</a>
       </div>
-      <div id="next-event-block">
-        <div class="event-empty">
-          <p>Carregando...</p>
-        </div>
-      </div>
+      <div id="next-events-block"></div>
     </section>
 
+    <!-- Último lugar -->
+    <section class="block" id="last-place-section" style="display:none">
+      <div class="block-header">
+        <h2>📍 Último lugar</h2>
+        <a href="lugares.html" class="link-sm">Ver todos →</a>
+      </div>
+      <div id="last-place-block"></div>
+    </section>
+
+    <!-- Resumo listas -->
+    <section class="block" id="lists-section" style="display:none">
+      <div class="block-header">
+        <h2>✅ Listas</h2>
+        <a href="checklist.html" class="link-sm">Ver todas →</a>
+      </div>
+      <div id="lists-block"></div>
+    </section>
+
+    <!-- Acesso rápido -->
     <section class="block">
       <h2>Acesso rápido</h2>
       <div class="quick-grid">
@@ -66,26 +88,11 @@
   </main>
 
   <nav class="bottom-nav">
-    <a href="index.html" class="nav-item active">
-      <span class="nav-icon">🏠</span>
-      <span>Início</span>
-    </a>
-    <a href="lugares.html" class="nav-item">
-      <span class="nav-icon">📍</span>
-      <span>Lugares</span>
-    </a>
-    <a href="checklist.html" class="nav-item">
-      <span class="nav-icon">✅</span>
-      <span>Lista</span>
-    </a>
-    <a href="agenda.html" class="nav-item">
-      <span class="nav-icon">📅</span>
-      <span>Agenda</span>
-    </a>
-    <a href="perfil.html" class="nav-item">
-      <span class="nav-icon">👤</span>
-      <span>Perfil</span>
-    </a>
+    <a href="index.html" class="nav-item active"><span class="nav-icon">🏠</span><span>Início</span></a>
+    <a href="lugares.html" class="nav-item"><span class="nav-icon">📍</span><span>Lugares</span></a>
+    <a href="checklist.html" class="nav-item"><span class="nav-icon">✅</span><span>Lista</span></a>
+    <a href="agenda.html" class="nav-item"><span class="nav-icon">📅</span><span>Agenda</span></a>
+    <a href="perfil.html" class="nav-item"><span class="nav-icon">👤</span><span>Perfil</span></a>
   </nav>
 </div>
 
@@ -95,8 +102,7 @@
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js')
-        .catch((err) => console.warn('SW não registrado:', err));
+      navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
     });
   }
 </script>
