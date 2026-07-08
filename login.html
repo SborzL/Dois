@@ -17,48 +17,47 @@
 <meta name="theme-color" content="#1f7a5c">
 </head>
 <body>
-
 <div class="phone">
+
   <div class="hero">
     <div class="hero-icon">
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2" aria-hidden="true">
         <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
       </svg>
     </div>
-    <h1>Dois, juntos.</h1>
-    <p>Seu espaço compartilhado para planejar, lembrar e viver momentos especiais.</p>
+    <h1 id="hero-title">Dois, juntos.</h1>
+    <p id="hero-sub">Seu espaço compartilhado para planejar, lembrar e viver momentos especiais.</p>
   </div>
 
   <div class="form-area">
-    <div class="tabs" role="tablist" aria-label="Alternar entre entrar e criar conta">
+
+    <!-- TABS -->
+    <div class="tabs" role="tablist" id="tabs-row">
       <button class="tab active" id="tab-entrar" role="tab" aria-selected="true">Entrar</button>
       <button class="tab" id="tab-criar" role="tab" aria-selected="false">Criar conta</button>
     </div>
 
-    <form id="login-form" novalidate>
-      <div>
-        <label for="email">E-mail</label>
-        <div class="input-wrap">
-          <input type="email" id="email" name="email" placeholder="seu@email.com" required autocomplete="email">
-        </div>
-        <span class="error-msg" id="email-error" role="alert">Digite um e-mail válido.</span>
+    <!-- ─ PAINEL: ENTRAR ────────────────────────── -->
+    <form id="form-entrar" class="auth-form" novalidate autocomplete="on">
+      <div class="field-wrap">
+        <label for="e-email">E-mail</label>
+        <input type="email" id="e-email" placeholder="seu@email.com" autocomplete="email" required>
+        <span class="field-error" id="e-email-err">Digite um e-mail válido.</span>
       </div>
-
-      <div>
-        <label for="senha">Senha</label>
-        <div class="input-wrap">
-          <input type="password" id="senha" name="senha" placeholder="••••••••" required minlength="6" autocomplete="current-password">
+      <div class="field-wrap">
+        <label for="e-senha">Senha</label>
+        <div class="input-pw">
+          <input type="password" id="e-senha" placeholder="••••••••" autocomplete="current-password" required minlength="6">
+          <button type="button" class="toggle-pw" data-target="e-senha" aria-label="Ver senha">👁️</button>
         </div>
-        <span class="error-msg" id="senha-error" role="alert">A senha precisa ter no mínimo 6 caracteres.</span>
-        <div class="row-between">
-          <a href="#" class="link-muted">Esqueci minha senha</a>
-        </div>
+        <span class="field-error" id="e-senha-err">Senha precisa ter ao menos 6 caracteres.</span>
       </div>
-
-      <button type="submit" class="btn-primary">Entrar</button>
-
+      <div class="row-between">
+        <button type="button" class="link-muted" id="btn-forgot">Esqueci minha senha</button>
+      </div>
+      <div class="form-feedback" id="e-feedback"></div>
+      <button type="submit" class="btn-primary" id="e-submit">Entrar</button>
       <div class="divider">ou continue com</div>
-
       <button type="button" class="btn-google" id="btn-google">
         <svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true">
           <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35 24 35c-6.1 0-11.2-3.9-13-9.3l-6.6 5.1C7.7 37.5 15.2 42 24 42c9.9 0 18.3-6.7 20.7-15.8.3-1.2.5-2.5.5-3.8 0-1.3-.2-2.6-.6-3.9z"/>
@@ -68,11 +67,69 @@
         </svg>
         Continuar com Google
       </button>
-
-      <p class="signup-hint">Não tem conta? <a href="#" id="link-criar">Criar conta</a></p>
     </form>
-  </div>
-</div>
+
+    <!-- ─ PAINEL: CRIAR CONTA ───────────────────── -->
+    <form id="form-criar" class="auth-form hidden" novalidate autocomplete="off">
+      <div class="field-wrap">
+        <label for="c-nome">Seu nome</label>
+        <input type="text" id="c-nome" placeholder="Como você quer ser chamado(a)?" autocomplete="name" required>
+        <span class="field-error" id="c-nome-err">Digite pelo menos 2 caracteres.</span>
+      </div>
+      <div class="field-wrap">
+        <label for="c-email">E-mail</label>
+        <input type="email" id="c-email" placeholder="seu@email.com" autocomplete="email" required>
+        <span class="field-error" id="c-email-err">Digite um e-mail válido.</span>
+      </div>
+      <div class="field-wrap">
+        <label for="c-senha">Senha</label>
+        <div class="input-pw">
+          <input type="password" id="c-senha" placeholder="Mínimo 6 caracteres" autocomplete="new-password" required minlength="6">
+          <button type="button" class="toggle-pw" data-target="c-senha" aria-label="Ver senha">👁️</button>
+        </div>
+        <div class="pw-strength" id="pw-strength">
+          <div class="pw-bar"><div id="pw-bar-fill"></div></div>
+          <span id="pw-label"></span>
+        </div>
+        <span class="field-error" id="c-senha-err">Senha precisa ter ao menos 6 caracteres.</span>
+      </div>
+      <div class="field-wrap">
+        <label for="c-confirma">Confirmar senha</label>
+        <div class="input-pw">
+          <input type="password" id="c-confirma" placeholder="Repita a senha" autocomplete="new-password" required>
+          <button type="button" class="toggle-pw" data-target="c-confirma" aria-label="Ver senha">👁️</button>
+        </div>
+        <span class="field-error" id="c-confirma-err">As senhas não coincidem.</span>
+      </div>
+      <div class="form-feedback" id="c-feedback"></div>
+      <button type="submit" class="btn-primary" id="c-submit">Criar minha conta</button>
+    </form>
+
+    <!-- ─ TELA DE SUCESSO POS-CADASTRO ────────────── -->
+    <div id="success-panel" class="hidden">
+      <div class="success-icon">📧</div>
+      <h2 class="success-title">Confirme seu e-mail</h2>
+      <p class="success-msg">Enviamos um link de confirmação para <strong id="success-email"></strong>.<br>Abra o e-mail e clique no link para ativar sua conta.</p>
+      <p class="success-hint">Após confirmar, volte aqui e entre com sua senha. 💚</p>
+      <button class="btn-primary" id="success-back-btn">Ir para o login</button>
+      <button class="link-muted" id="resend-btn" style="margin-top:10px;display:block;width:100%;text-align:center;">Não recebi o e-mail — reenviar</button>
+    </div>
+
+    <!-- ─ PAINEL ESQUECI A SENHA ────────────────── -->
+    <div id="forgot-panel" class="hidden">
+      <button class="back-link" id="forgot-back">‹ Voltar</button>
+      <p class="forgot-intro">Digite seu e-mail e enviaremos um link para redefinir sua senha.</p>
+      <div class="field-wrap">
+        <label for="f-email">E-mail</label>
+        <input type="email" id="f-email" placeholder="seu@email.com">
+        <span class="field-error" id="f-email-err">Digite um e-mail válido.</span>
+      </div>
+      <div class="form-feedback" id="f-feedback"></div>
+      <button class="btn-primary" id="f-submit">Enviar link de recuperação</button>
+    </div>
+
+  </div><!-- /form-area -->
+</div><!-- /phone -->
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="supabase-client.js"></script>
@@ -80,8 +137,7 @@
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js')
-        .catch((err) => console.warn('SW não registrado:', err));
+      navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
     });
   }
 </script>
