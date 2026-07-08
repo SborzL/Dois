@@ -68,8 +68,21 @@ function setupCoupleActions() {
   document.getElementById('join-couple-btn').addEventListener('click', async () => {
     const code = document.getElementById('invite-code-input').value.trim().toUpperCase();
     if (!code) return;
+
     const { data: c } = await supabaseClient.from('couples').select('id').eq('invite_code', code).single();
     if (!c) { showToast('Código inválido.'); return; }
+
+    // Verifica se o casal já tem 2 membros
+    const { data: existingMembers } = await supabaseClient
+      .from('couple_members')
+      .select('id')
+      .eq('couple_id', c.id);
+
+    if (existingMembers && existingMembers.length >= 2) {
+      showToast('Este casal já está completo.');
+      return;
+    }
+
     await supabaseClient.from('couple_members').insert({ couple_id: c.id, user_id: currentUser.id });
     showToast('Você entrou no casal!');
     window.location.reload();

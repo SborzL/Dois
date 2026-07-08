@@ -115,6 +115,20 @@ btnEntrarCodigo.addEventListener('click', async () => {
     return;
   }
 
+  // Verifica se o casal já tem 2 membros
+  const { data: existingMembers } = await supabaseClient
+    .from('couple_members')
+    .select('id')
+    .eq('couple_id', couple.id);
+
+  if (existingMembers && existingMembers.length >= 2) {
+    codigoError.textContent = 'Este casal já está completo.';
+    codigoError.classList.add('show');
+    btnEntrarCodigo.disabled = false;
+    btnEntrarCodigo.textContent = 'Conectar';
+    return;
+  }
+
   const { error: memberError } = await supabaseClient
     .from('couple_members')
     .insert({ couple_id: couple.id, user_id: userId });
