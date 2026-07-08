@@ -20,7 +20,6 @@
   <main class="content">
     <h1 class="page-title">👤 Perfil</h1>
 
-    <!-- Seção: tem casal -->
     <section id="couple-section" style="display:none">
       <div class="info-card">
         <p class="info-label">Código do casal</p>
@@ -32,7 +31,6 @@
       </div>
     </section>
 
-    <!-- Seção: sem casal -->
     <section id="no-couple-section" style="display:none">
       <div class="info-card">
         <p class="info-label">Você ainda não está conectado a um casal.</p>
@@ -40,7 +38,6 @@
       </div>
     </section>
 
-    <!-- Nome -->
     <section class="settings-block">
       <p class="settings-label">Seu nome</p>
       <div class="field-row">
@@ -67,5 +64,13 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="supabase-client.js"></script>
 <script src="perfil.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js')
+        .catch((err) => console.warn('SW não registrado:', err));
+    });
+  }
+</script>
 </body>
 </html>
