@@ -5,6 +5,7 @@ let allEvents = [];
 let viewYear, viewMonth;
 let editingEventId = null;
 let activeCatFilter = '';
+let openedDetailEventId = null;
 
 const CAT_ICONS = { encontro: '💑', aniversario: '🎂', viagem: '✈️', saida: '🍽️', outro: '📌' };
 const CAT_LABELS = { encontro: 'Encontro', aniversario: 'Aniversário', viagem: 'Viagem', saida: 'Saída', outro: 'Outro' };
@@ -23,6 +24,7 @@ async function init() {
   buildCatFilter();
   await loadEvents();
   setupModal();
+  setupDetailSheet();
   setupNav();
   requestNotifPermission();
 }
@@ -30,9 +32,7 @@ async function init() {
 function buildCatFilter() {
   const row = document.getElementById('cat-filter-row');
   row.innerHTML = `<button class="chip active" data-cat="">Todos</button>` +
-    Object.entries(CAT_ICONS).map(([k, ic]) =>
-      `<button class="chip" data-cat="${k}">${ic} ${CAT_LABELS[k]}</button>`
-    ).join('');
+    Object.entries(CAT_ICONS).map(([k, ic]) => `<button class="chip" data-cat="${k}">${ic} ${CAT_LABELS[k]}</button>`).join('');
   row.addEventListener('click', e => {
     const btn = e.target.closest('.chip'); if (!btn) return;
     row.querySelectorAll('.chip').forEach(b => b.classList.remove('active'));
@@ -64,7 +64,6 @@ function renderCalendar() {
   const daysInMonth = new Date(viewYear, viewMonth + 1, 0).getDate();
   const today = new Date().toISOString().split('T')[0];
   const evs = filteredEvents();
-
   const eventDayMap = {};
   evs.filter(e => {
     const d = new Date(e.event_date + 'T12:00:00');
@@ -74,7 +73,6 @@ function renderCalendar() {
     if (!eventDayMap[day]) eventDayMap[day] = [];
     eventDayMap[day].push(e.category || 'outro');
   });
-
   let html = '';
   for (let i = 0; i < firstDay; i++) html += '<div></div>';
   for (let d = 1; d <= daysInMonth; d++) {
@@ -133,7 +131,7 @@ function eventCard(e) {
   const sub = [hora, e.place].filter(Boolean).join(' · ');
   const cat = e.category || 'outro';
   const rec = e.recurrence && e.recurrence !== 'none' ? `<span class="rec-badge">🔁 ${REC_LABELS[e.recurrence]}</span>` : '';
-  return `<div class="event-row" data-id="${e.id}">
+  return `<div class="event-row" data-id="${e.id}" role="button" tabindex="0">
     <div class="event-date-sm cat-border-${cat}"><span>${sem[d.getDay()]}</span><span>${d.getDate()}</span></div>
     <div class="event-info">
       <p class="event-title">${CAT_ICONS[cat]} ${esc(e.title)}</p>
@@ -147,6 +145,65 @@ function eventCard(e) {
 function attachEventActions(container, events) {
   container.querySelectorAll('.edit-event-btn').forEach(btn => {
     btn.addEventListener('click', e => { e.stopPropagation(); openModal(events.find(ev=>ev.id===btn.dataset.id)); });
+  });
+  container.querySelectorAll('.event-row').forEach(row => {
+    row.addEventListener('click', e => {
+      if (e.target.closest('.edit-event-btn')) return;
+      openDetail(events.find(ev => ev.id === row.dataset.id));
+    });
+    row.addEventListener('keydown', e => {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        openDetail(events.find(ev => ev.id === row.dataset.id));
+      }
+    });
+  });
+}
+
+function openDetail(event) {
+  if (!event) return;
+  openedDetailEventId = event.id;
+  const d = new Date(event.event_date + 'T12:00:00');
+  const dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
+  const meses = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
+  const when = `${dias[d.getDay()]}, ${d.getDate()} de ${meses[d.getMonth()]}${event.event_time ? ` às ${event.event_time.slice(0,5)}` : ''}`;
+  const cat = event.category || 'outro';
+  document.getElementById('detail-category').textContent = `${CAT_ICONS[cat]} ${CAT_LABELS[cat]}`;
+  document.getElementById('detail-title').textContent = event.title || 'Evento';
+  document.getElementById('detail-when').textContent = when;
+  document.getElementById('detail-place').textContent = event.place || 'Local não informado';
+  document.getElementById('detail-recurrence').textContent = event.recurrence && event.recurrence !== 'none' ? REC_LABELS[event.recurrence] : 'Não repete';
+  document.getElementById('detail-notes').textContent = event.notes || 'Sem observações';
+  const mapsWrap = document.getElementById('detail-maps-wrap');
+  const mapsLink = document.getElementById('detail-maps-link');
+  if (event.maps_url) {
+    mapsLink.href = event.maps_url;
+    mapsWrap.style.display = 'flex';
+  } else {
+    mapsWrap.style.display = 'none';
+  }
+  document.getElementById('event-detail-sheet').classList.add('open');
+}
+
+function closeDetail() {
+  document.getElementById('event-detail-sheet').classList.remove('open');
+  openedDetailEventId = null;
+}
+
+function setupDetailSheet() {
+  const sheet = document.getElementById('event-detail-sheet');
+  document.getElementById('detail-close').addEventListener('click', closeDetail);
+  sheet.addEventListener('click', e => { if (e.target === sheet) closeDetail(); });
+  document.getElementById('detail-edit-btn').addEventListener('click', () => {
+    const event = allEvents.find(e => e.id === openedDetailEventId);
+    closeDetail();
+    openModal(event);
+  });
+  document.getElementById('detail-delete-btn').addEventListener('click', async () => {
+    if (!openedDetailEventId || !confirm('Excluir este evento?')) return;
+    await supabaseClient.from('events').delete().eq('id', openedDetailEventId);
+    closeDetail();
+    loadEvents();
   });
 }
 
@@ -163,6 +220,7 @@ function openModal(event = null, preDate = '') {
     document.getElementById('event-date').value = event.event_date || '';
     document.getElementById('event-time').value = event.event_time ? event.event_time.slice(0,5) : '';
     document.getElementById('event-place').value = event.place || '';
+    document.getElementById('event-maps-url').value = event.maps_url || '';
     document.getElementById('event-recurrence').value = event.recurrence || 'none';
     document.getElementById('event-recurrence-end').value = event.recurrence_end || '';
     document.getElementById('event-notes').value = event.notes || '';
@@ -203,6 +261,7 @@ function setupModal() {
       event_date: dateVal,
       event_time: document.getElementById('event-time').value || null,
       place: document.getElementById('event-place').value.trim() || null,
+      maps_url: document.getElementById('event-maps-url').value.trim() || null,
       recurrence: document.getElementById('event-recurrence').value || 'none',
       recurrence_end: document.getElementById('event-recurrence-end').value || null,
       notes: document.getElementById('event-notes').value.trim() || null

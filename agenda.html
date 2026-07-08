@@ -34,7 +34,6 @@
       </div>
       <div class="cal-grid" id="cal-grid"></div>
     </div>
-    <!-- Filtro por categoria -->
     <div class="chip-row" id="cat-filter-row"></div>
     <div id="day-events" style="display:none">
       <div class="section-header">
@@ -56,7 +55,7 @@
     <a href="perfil.html" class="nav-item"><span class="nav-icon">👤</span><span>Perfil</span></a>
   </nav>
 </div>
-<!-- Modal evento -->
+
 <div class="modal-overlay" id="event-modal">
   <div class="modal-box">
     <div class="modal-header">
@@ -93,6 +92,10 @@
         <input type="text" id="event-place" placeholder="Ex: Restaurante Bossa">
       </div>
       <div class="modal-field">
+        <label for="event-maps-url">Link Google Maps</label>
+        <input type="url" id="event-maps-url" placeholder="https://maps.google.com/...">
+      </div>
+      <div class="modal-field">
         <label for="event-recurrence">Repetição</label>
         <select id="event-recurrence">
           <option value="none">Não repetir</option>
@@ -116,6 +119,31 @@
     </form>
   </div>
 </div>
+
+<div class="sheet-overlay" id="event-detail-sheet">
+  <div class="detail-sheet">
+    <div class="sheet-handle"></div>
+    <div class="detail-head">
+      <div>
+        <p class="detail-kicker" id="detail-category"></p>
+        <h3 id="detail-title"></h3>
+      </div>
+      <button class="modal-close" id="detail-close" aria-label="Fechar">✕</button>
+    </div>
+    <div class="detail-body">
+      <div class="detail-row"><span>📅</span><div><strong>Quando</strong><p id="detail-when"></p></div></div>
+      <div class="detail-row"><span>📍</span><div><strong>Local</strong><p id="detail-place"></p></div></div>
+      <div class="detail-row" id="detail-maps-wrap" style="display:none"><span>🗺️</span><div><strong>Mapa</strong><p><a id="detail-maps-link" target="_blank" rel="noopener">Abrir no Google Maps</a></p></div></div>
+      <div class="detail-row"><span>🔁</span><div><strong>Repetição</strong><p id="detail-recurrence"></p></div></div>
+      <div class="detail-row"><span>📝</span><div><strong>Observações</strong><p id="detail-notes"></p></div></div>
+    </div>
+    <div class="detail-actions">
+      <button class="btn-secondary" id="detail-edit-btn">Editar</button>
+      <button class="btn-danger" id="detail-delete-btn">Excluir</button>
+    </div>
+  </div>
+</div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="supabase-client.js"></script>
 <script src="agenda.js"></script>
