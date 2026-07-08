@@ -29,10 +29,12 @@
       <button class="tab" id="tab-tenho-codigo" role="tab" aria-selected="false">Tenho um código</button>
     </div>
 
+    <!-- Painel: gerar código -->
     <div id="panel-criar">
       <div class="panel-card">
-        <p class="panel-desc">Gere um código e envie para seu(sua) parceiro(a) usar na outra aba.</p>
+        <p class="panel-desc">Uma pessoa gera o código e envia para a outra digitar na aba ao lado.</p>
         <button class="btn-primary" id="btn-gerar-codigo">Gerar código</button>
+        <p class="field-error" id="gerar-error"></p>
         <div id="code-box" class="code-box hidden">
           <p class="code-label">Seu código:</p>
           <p class="code-value" id="code-value"></p>
@@ -41,10 +43,11 @@
       </div>
     </div>
 
+    <!-- Painel: usar código -->
     <div id="panel-entrar" class="hidden">
       <div class="panel-card">
-        <p class="panel-desc">Digite o código gerado pelo(a) seu(sua) parceiro(a).</p>
-        <input type="text" id="input-codigo" class="code-input" placeholder="Ex: AB3C9X" maxlength="6" autocomplete="off" autocapitalize="characters">
+        <p class="panel-desc">Digite o código de 6 caracteres gerado pelo(a) seu(sua) parceiro(a).</p>
+        <input type="text" id="input-codigo" class="code-input" placeholder="AB3C9X" maxlength="6" autocomplete="off" autocapitalize="characters" inputmode="text">
         <p class="field-error" id="codigo-error"></p>
         <button class="btn-primary" id="btn-entrar-codigo">Conectar</button>
       </div>
