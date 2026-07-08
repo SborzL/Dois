@@ -1,0 +1,4 @@
+const SUPABASE_URL = "https://xermoenaxdqxqetpeopu.supabase.co";
+const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inhlcm1vZW5heGRxeHFldHBlb3B1Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0ODM0ODAsImV4cCI6MjA5OTA1OTQ4MH0.PCB7pPyrai6fJLjRTBjOUTdYw-dGg5qQSG-VwAW6TCs";
+
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);

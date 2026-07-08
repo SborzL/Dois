@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Dois - Login</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="login.css">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dois">
+<meta name="theme-color" content="#1f7a5c">
+</head>
+<body>
+
+<div class="phone">
+  <div class="hero">
+    <div class="hero-icon">
+      <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+        <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
+      </svg>
+    </div>
+    <h1>Dois, juntos.</h1>
+    <p>Seu espaço compartilhado para planejar, lembrar e viver momentos especiais.</p>
+  </div>
+
+  <div class="form-area">
+    <div class="tabs" role="tablist" aria-label="Alternar entre entrar e criar conta">
+      <button class="tab active" id="tab-entrar" role="tab" aria-selected="true">Entrar</button>
+      <button class="tab" id="tab-criar" role="tab" aria-selected="false">Criar conta</button>
+    </div>
+
+    <form id="login-form" novalidate>
+      <div>
+        <label for="email">E-mail</label>
+        <div class="input-wrap">
+          <input type="email" id="email" name="email" placeholder="seu@email.com" required>
+        </div>
+        <span class="error-msg" id="email-error">Digite um e-mail válido.</span>
+      </div>
+
+      <div>
+        <label for="senha">Senha</label>
+        <div class="input-wrap">
+          <input type="password" id="senha" name="senha" placeholder="********" required minlength="6">
+        </div>
+        <span class="error-msg" id="senha-error">A senha precisa ter no mínimo 6 caracteres.</span><br>
+        <div class="row-between">
+          <a href="#" class="link-muted">Esqueci minha senha</a>
+        </div>
+      </div>
+
+      <button type="submit" class="btn-primary">Entrar</button>
+
+      <div class="divider">ou continue com</div>
+
+      <button type="button" class="btn-google">
+        <svg width="18" height="18" viewBox="0 0 48 48">
+          <path fill="#FFC107" d="M43.6 20.5H42V20H24v8h11.3C33.7 32.4 29.3 35 24 35c-6.1 0-11.2-3.9-13-9.3l-6.6 5.1C7.7 37.5 15.2 42 24 42c9.9 0 18.3-6.7 20.7-15.8.3-1.2.5-2.5.5-3.8 0-1.3-.2-2.6-.6-3.9z"/>
+          <path fill="#FF3D00" d="M6.3 14.7l6.6 4.8C14.6 15.9 19 13 24 13c3 0 5.7 1 7.8 2.8l6-6C34.4 6.9 29.5 5 24 5c-7.7 0-14.3 4.4-17.7 10.7z"/>
+          <path fill="#4CAF50" d="M24 42c5.2 0 9.9-1.7 13.5-4.7l-6.2-5.1c-2 1.4-4.6 2.2-7.3 2.2-5.3 0-9.7-2.6-11.6-6.9l-6.6 5.1C9.5 37.6 16.1 42 24 42z"/>
+          <path fill="#1976D2" d="M43.6 20.5H42V20H24v8h11.3c-1 2.7-2.9 4.9-5.4 6.2l6.2 5.1C39.9 36.2 44 30.8 44 24c0-1.3-.2-2.6-.4-3.5z"/>
+        </svg>
+        Continuar com Google
+      </button>
+
+      <p class="signup-hint">Não tem conta? <a href="#" id="link-criar">Criar conta</a></p>
+    </form>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase-client.js"></script>
+<script src="login.js"></script>
+</body>
+</html>

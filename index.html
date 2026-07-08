@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Dois - Início</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="index.css">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dois">
+<meta name="theme-color" content="#1f7a5c">
+</head>
+<body>
+
+<div class="phone">
+  <main class="content">
+
+    <section class="hero-card">
+      <p class="hero-date">Quarta-feira, 8 de julho</p>
+      <h1>Olá, Ana & Pedro <span>💚</span></h1>
+      <p class="hero-sub">Juntos há 2 anos, 4 meses e 12 dias</p>
+    </section>
+
+    <section class="block">
+      <div class="block-header">
+        <h2>Próximo encontro</h2>
+        <a href="agenda.html" class="link-sm">Ver agenda →</a>
+      </div>
+      <div class="event-card">
+        <div class="event-date">
+          <span class="event-day">SÁB</span>
+          <span class="event-num">14</span>
+        </div>
+        <div class="event-info">
+          <p class="event-title">Jantar no Bossa</p>
+          <p class="event-sub">19h30 · Restaurante Bossa Nova</p>
+        </div>
+        <span class="event-icon">🍽️</span>
+      </div>
+    </section>
+
+    <section class="block">
+      <h2>Acesso rápido</h2>
+      <div class="quick-grid">
+        <a href="lugares.html" class="quick-card">
+          <span class="quick-icon">📍</span>
+          <p class="quick-title">Lugares</p>
+          <p class="quick-sub">8 salvos</p>
+        </a>
+        <a href="checklist.html" class="quick-card">
+          <span class="quick-icon">✅</span>
+          <p class="quick-title">Listas</p>
+          <p class="quick-sub">3 pendentes</p>
+        </a>
+        <a href="agenda.html" class="quick-card">
+          <span class="quick-icon">📅</span>
+          <p class="quick-title">Agenda</p>
+          <p class="quick-sub">2 eventos</p>
+        </a>
+        <a href="#" class="quick-card">
+          <span class="quick-icon">📷</span>
+          <p class="quick-title">Memórias</p>
+          <p class="quick-sub">12 fotos</p>
+        </a>
+      </div>
+    </section>
+
+    <section class="block">
+      <div class="block-header">
+        <h2>Lista de hoje</h2>
+        <a href="checklist.html" class="link-sm">Ver tudo →</a>
+      </div>
+      <ul class="today-list" id="today-list">
+        <li class="today-item done">
+          <input type="checkbox" checked>
+          <span>Reservar mesa no restaurante</span>
+        </li>
+        <li class="today-item">
+          <input type="checkbox">
+          <span>Comprar flores para Ana</span>
+        </li>
+      </ul>
+    </section>
+
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item active">
+      <span class="nav-icon">🏠</span>
+      <span>Início</span>
+    </a>
+    <a href="lugares.html" class="nav-item">
+      <span class="nav-icon">📍</span>
+      <span>Lugares</span>
+    </a>
+    <a href="checklist.html" class="nav-item">
+      <span class="nav-icon">✅</span>
+      <span>Lista</span>
+    </a>
+    <a href="agenda.html" class="nav-item">
+      <span class="nav-icon">📅</span>
+      <span>Agenda</span>
+    </a>
+    <a href="perfil.html" class="nav-item">
+      <span class="nav-icon">👤</span>
+      <span>Perfil</span>
+    </a>
+  </nav>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase-client.js"></script>
+<script src="index.js"></script>
+</body>
+</html>

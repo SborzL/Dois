@@ -1,0 +1,147 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Dois - Lugares</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="lugares.css">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dois">
+<meta name="theme-color" content="#1f7a5c">
+</head>
+<body>
+
+<div class="phone">
+  <main class="content">
+
+    <div class="page-header">
+      <div>
+        <h1>Lugares</h1>
+        <p class="page-sub" id="places-count">5 lugares salvos</p>
+      </div>
+      <button class="btn-add" id="btn-add-place" aria-label="Adicionar lugar">+</button>
+    </div>
+
+    <div class="filters" role="tablist" aria-label="Filtrar por categoria">
+      <button class="filter active" data-filter="todos">Todos</button>
+      <button class="filter" data-filter="restaurantes">Restaurantes</button>
+      <button class="filter" data-filter="cafes">Cafés</button>
+      <button class="filter" data-filter="passeios">Passeios</button>
+    </div>
+
+    <div class="status-summary">
+      <div class="status-chip quero-ir">
+        <span class="status-num">2</span>
+        <span class="status-label">Quero ir</span>
+      </div>
+      <div class="status-chip agendado">
+        <span class="status-num">1</span>
+        <span class="status-label">Agendado</span>
+      </div>
+      <div class="status-chip fomos">
+        <span class="status-num">2</span>
+        <span class="status-label">Já fomos</span>
+      </div>
+    </div>
+
+    <ul class="place-list" id="place-list">
+
+      <li class="place-card" data-category="restaurantes" data-status="agendado">
+        <span class="place-emoji">🍽️</span>
+        <div class="place-info">
+          <div class="place-top">
+            <p class="place-name">Restaurante Bossa Nova</p>
+            <span class="badge badge-agendado">Agendado</span>
+          </div>
+          <p class="place-address">Rua Augusta, 1420 · SP</p>
+          <p class="place-rating">★ 4.8 · Restaurantes</p>
+        </div>
+      </li>
+
+      <li class="place-card" data-category="cafes" data-status="quero-ir">
+        <span class="place-emoji">☕</span>
+        <div class="place-info">
+          <div class="place-top">
+            <p class="place-name">Café Madeleine</p>
+            <span class="badge badge-quero-ir">Quero ir</span>
+          </div>
+          <p class="place-address">Al. Lorena, 305 · SP</p>
+          <p class="place-rating">★ 4.6 · Cafés</p>
+        </div>
+      </li>
+
+      <li class="place-card" data-category="passeios" data-status="fomos">
+        <span class="place-emoji">🌳</span>
+        <div class="place-info">
+          <div class="place-top">
+            <p class="place-name">Parque Trianon</p>
+            <span class="badge badge-fomos">Já fomos</span>
+          </div>
+          <p class="place-address">Av. Paulista · SP</p>
+          <p class="place-rating">★ 4.9 · Passeios</p>
+        </div>
+      </li>
+
+      <li class="place-card" data-category="restaurantes" data-status="quero-ir">
+        <span class="place-emoji">🍹</span>
+        <div class="place-info">
+          <div class="place-top">
+            <p class="place-name">Bar do Juarez</p>
+            <span class="badge badge-quero-ir">Quero ir</span>
+          </div>
+          <p class="place-address">R. Aspicuelta, 55 · SP</p>
+          <p class="place-rating">★ 4.5 · Restaurantes</p>
+        </div>
+      </li>
+
+      <li class="place-card" data-category="passeios" data-status="fomos">
+        <span class="place-emoji">🎬</span>
+        <div class="place-info">
+          <div class="place-top">
+            <p class="place-name">Cinema Reserva</p>
+            <span class="badge badge-fomos">Já fomos</span>
+          </div>
+          <p class="place-address">Shopping Iguatemi · SP</p>
+          <p class="place-rating">★ 4.4 · Passeios</p>
+        </div>
+      </li>
+
+    </ul>
+
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item">
+      <span class="nav-icon">🏠</span>
+      <span>Início</span>
+    </a>
+    <a href="lugares.html" class="nav-item active">
+      <span class="nav-icon">📍</span>
+      <span>Lugares</span>
+    </a>
+    <a href="checklist.html" class="nav-item">
+      <span class="nav-icon">✅</span>
+      <span>Lista</span>
+    </a>
+    <a href="agenda.html" class="nav-item">
+      <span class="nav-icon">📅</span>
+      <span>Agenda</span>
+    </a>
+    <a href="perfil.html" class="nav-item">
+      <span class="nav-icon">👤</span>
+      <span>Perfil</span>
+    </a>
+  </nav>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase-client.js"></script>
+<script src="lugares.js"></script>
+</body>
+</html>

@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Dois - Perfil</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="perfil.css">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dois">
+<meta name="theme-color" content="#1f7a5c">
+</head>
+<body>
+
+<div class="phone">
+  <main class="content">
+
+    <h1 class="page-title">Perfil</h1>
+
+    <section class="couple-card">
+      <div class="couple-avatars">
+        <span class="avatar avatar-1">👩</span>
+        <span class="avatar avatar-2">🧑</span>
+      </div>
+      <p class="couple-names">Ana &amp; Pedro</p>
+      <p class="couple-since">Juntos desde 12 de março de 2024</p>
+      <div class="couple-stats">
+        <div class="stat">
+          <span class="stat-num">2 anos</span>
+        </div>
+        <span class="stat-dot">•</span>
+        <div class="stat">
+          <span class="stat-num">8 lugares</span>
+        </div>
+      </div>
+    </section>
+
+    <section class="settings-block">
+      <p class="settings-label">Conta</p>
+      <ul class="settings-list">
+        <li class="settings-item" id="item-editar">
+          <span class="settings-icon">👤</span>
+          <div class="settings-info">
+            <p class="settings-title">Editar perfil</p>
+            <p class="settings-sub">Nome, foto, e-mail</p>
+          </div>
+          <span class="chevron-right">›</span>
+        </li>
+        <li class="settings-item" id="item-notificacoes">
+          <span class="settings-icon">🔔</span>
+          <div class="settings-info">
+            <p class="settings-title">Notificações</p>
+            <p class="settings-sub">Lembretes e alertas</p>
+          </div>
+          <span class="chevron-right">›</span>
+        </li>
+        <li class="settings-item" id="item-privacidade">
+          <span class="settings-icon">🔒</span>
+          <div class="settings-info">
+            <p class="settings-title">Privacidade</p>
+            <p class="settings-sub">Dados e segurança</p>
+          </div>
+          <span class="chevron-right">›</span>
+        </li>
+      </ul>
+    </section>
+
+    <section class="settings-block">
+      <p class="settings-label">Casal</p>
+      <ul class="settings-list">
+        <li class="settings-item" id="item-parceiro">
+          <span class="settings-icon">💚</span>
+          <div class="settings-info">
+            <p class="settings-title">Parceiro(a)</p>
+            <p class="settings-sub">Ana Silva · Conectada</p>
+          </div>
+          <span class="chevron-right">›</span>
+        </li>
+        <li class="settings-item" id="item-data">
+          <span class="settings-icon">📅</span>
+          <div class="settings-info">
+            <p class="settings-title">Data de início</p>
+            <p class="settings-sub">12 de março de 2024</p>
+          </div>
+          <span class="chevron-right">›</span>
+        </li>
+      </ul>
+    </section>
+
+    <button class="btn-logout" id="btn-logout">Sair da conta</button>
+
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item">
+      <span class="nav-icon">🏠</span>
+      <span>Início</span>
+    </a>
+    <a href="lugares.html" class="nav-item">
+      <span class="nav-icon">📍</span>
+      <span>Lugares</span>
+    </a>
+    <a href="checklist.html" class="nav-item">
+      <span class="nav-icon">✅</span>
+      <span>Lista</span>
+    </a>
+    <a href="agenda.html" class="nav-item">
+      <span class="nav-icon">📅</span>
+      <span>Agenda</span>
+    </a>
+    <a href="perfil.html" class="nav-item active">
+      <span class="nav-icon">👤</span>
+      <span>Perfil</span>
+    </a>
+  </nav>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase-client.js"></script>
+<script src="perfil.js"></script>
+</body>
+</html>
