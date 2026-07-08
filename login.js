@@ -63,6 +63,17 @@ form.addEventListener('submit', async function(e){
       return;
     }
 
-    window.location.href = 'index.html';
+    // Verifica se o usuario ja tem casal vinculado
+    const { data: memberData } = await supabaseClient
+      .from('couple_members')
+      .select('couple_id')
+      .eq('user_id', data.user.id)
+      .maybeSingle();
+
+    if(memberData){
+      window.location.href = 'index.html';
+    } else {
+      window.location.href = 'conectar.html';
+    }
   }
 });
