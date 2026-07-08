@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Dois - Lista</title>
+<title>Dois - Listas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -18,19 +18,33 @@
 </head>
 <body>
 <div class="phone">
-  <main class="content">
+
+  <!-- TELA 1: grade de listas -->
+  <main class="content" id="screen-lists">
     <div class="page-header">
       <h1>✅ Listas</h1>
       <button class="fab-inline" id="add-list-btn" aria-label="Nova lista">+</button>
     </div>
-    <div class="lists-scroll" id="lists-wrap"></div>
-    <div id="items-section" style="display:none">
-      <div class="items-header">
-        <button class="fab-sm" id="add-item-btn" aria-label="Adicionar item">+ Item</button>
-      </div>
-      <ul class="items-ul" id="items-list"></ul>
-    </div>
+    <div class="lists-grid" id="lists-grid"></div>
   </main>
+
+  <!-- TELA 2: itens de uma lista -->
+  <main class="content hidden" id="screen-detail">
+    <div class="page-header detail-header">
+      <button class="back-btn" id="back-btn" aria-label="Voltar">‹</button>
+      <div class="header-title-wrap">
+        <h1 id="detail-list-title"></h1>
+        <span class="progress-text" id="detail-progress"></span>
+      </div>
+      <button class="btn-icon del-list-btn" id="del-list-btn" aria-label="Excluir lista">🗑️</button>
+    </div>
+    <div class="progress-bar-wrap">
+      <div class="progress-bar-track"><div class="progress-bar-fill" id="progress-bar"></div></div>
+    </div>
+    <ul class="items-ul" id="items-list"></ul>
+    <button class="add-item-fab" id="add-item-btn">+ Adicionar item</button>
+  </main>
+
   <nav class="bottom-nav">
     <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span><span>Início</span></a>
     <a href="lugares.html" class="nav-item"><span class="nav-icon">📍</span><span>Lugares</span></a>
@@ -39,6 +53,7 @@
     <a href="perfil.html" class="nav-item"><span class="nav-icon">👤</span><span>Perfil</span></a>
   </nav>
 </div>
+
 <!-- Modal nova lista -->
 <div class="modal-overlay" id="list-modal">
   <div class="modal-box">
@@ -49,7 +64,11 @@
     <form class="modal-form" id="list-form" autocomplete="off">
       <div class="modal-field">
         <label for="list-title-input">Nome da lista</label>
-        <input type="text" id="list-title-input" placeholder="Ex: Compras, Filmes para ver..." required>
+        <input type="text" id="list-title-input" placeholder="Ex: Filmes para ver, Compras..." required>
+      </div>
+      <div class="modal-field">
+        <label for="list-emoji-input">Emoji (opcional)</label>
+        <input type="text" id="list-emoji-input" placeholder="🎬 🛒 💊 ✈️" maxlength="4">
       </div>
       <div class="modal-actions">
         <button type="submit" class="btn-primary">Criar lista</button>
@@ -57,6 +76,7 @@
     </form>
   </div>
 </div>
+
 <!-- Modal novo item -->
 <div class="modal-overlay" id="item-modal">
   <div class="modal-box">
@@ -83,6 +103,7 @@
     </form>
   </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="supabase-client.js"></script>
 <script src="checklist.js"></script>

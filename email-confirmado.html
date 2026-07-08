@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Dois - Email Confirmado</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dois">
+<meta name="theme-color" content="#1f7a5c">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Work Sans', sans-serif;
+  background: linear-gradient(160deg, #e6f7ef 0%, #f4f6f4 100%);
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.card {
+  background: #fff;
+  border-radius: 24px;
+  padding: 40px 28px 32px;
+  max-width: 360px;
+  width: calc(100% - 32px);
+  text-align: center;
+  box-shadow: 0 8px 40px rgba(0,0,0,0.08);
+}
+.icon-wrap {
+  width: 72px; height: 72px;
+  background: #e6f7ef;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 2.2rem;
+  margin: 0 auto 20px;
+  animation: pop .5s cubic-bezier(.34,1.56,.64,1) both;
+}
+@keyframes pop {
+  from { transform: scale(0.4); opacity: 0; }
+  to   { transform: scale(1);   opacity: 1; }
+}
+h1 { font-size: 1.35rem; font-weight: 700; color: #1a2e1a; margin-bottom: 10px; }
+p  { font-size: 0.92rem; color: #6b7280; line-height: 1.55; margin-bottom: 6px; }
+.name { font-weight: 700; color: #2d9e73; }
+.btn {
+  display: block;
+  width: 100%;
+  margin-top: 28px;
+  padding: 14px;
+  background: #2d9e73;
+  color: #fff;
+  border: none;
+  border-radius: 14px;
+  font-size: 0.98rem;
+  font-weight: 700;
+  font-family: 'Work Sans', sans-serif;
+  cursor: pointer;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+  transition: background .15s;
+}
+.btn:active { background: #1f7a5c; }
+.counter {
+  font-size: 0.78rem;
+  color: #aaa;
+  margin-top: 14px;
+}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="icon-wrap">💚</div>
+  <h1>Email confirmado!</h1>
+  <p>Oi <span class="name" id="user-name"></span>, tudo certo!</p>
+  <p>Sua conta foi verificada com sucesso. Agora vocês dois podem se conectar e começar a usar o app juntos. 💑</p>
+  <a href="index.html" class="btn" id="go-btn">Entrar no Dois →</a>
+  <p class="counter" id="counter-msg"></p>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase-client.js"></script>
+<script>
+async function main() {
+  // O Supabase detecta automaticamente o token na URL (hash ou query)
+  const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session?.user) {
+    const email = session.user.email || '';
+    const name = email.split('@')[0];
+    document.getElementById('user-name').textContent = name;
+  }
+
+  // Contagem regressiva de 5s
+  let secs = 5;
+  const msg = document.getElementById('counter-msg');
+  function tick() {
+    msg.textContent = `Redirecionando em ${secs}s...`;
+    if (secs <= 0) { window.location.href = 'index.html'; return; }
+    secs--;
+    setTimeout(tick, 1000);
+  }
+  tick();
+}
+main();
+</script>
+</body>
+</html>
