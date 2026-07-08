@@ -34,6 +34,8 @@
       </div>
       <div class="cal-grid" id="cal-grid"></div>
     </div>
+    <!-- Filtro por categoria -->
+    <div class="chip-row" id="cat-filter-row"></div>
     <div id="day-events" style="display:none">
       <div class="section-header">
         <h2 id="day-events-title"></h2>
@@ -54,10 +56,11 @@
     <a href="perfil.html" class="nav-item"><span class="nav-icon">👤</span><span>Perfil</span></a>
   </nav>
 </div>
+<!-- Modal evento -->
 <div class="modal-overlay" id="event-modal">
   <div class="modal-box">
     <div class="modal-header">
-      <h3>Novo evento</h3>
+      <h3 id="event-modal-title">Novo evento</h3>
       <button class="modal-close" id="event-modal-close" aria-label="Fechar">✕</button>
     </div>
     <form class="modal-form" id="event-form" autocomplete="off">
@@ -66,23 +69,49 @@
         <input type="text" id="event-title" placeholder="Ex: Jantar romântico" required>
       </div>
       <div class="modal-field">
-        <label for="event-date">Data *</label>
-        <input type="date" id="event-date" required>
+        <label for="event-category">Categoria</label>
+        <select id="event-category">
+          <option value="outro">📌 Outro</option>
+          <option value="encontro">💑 Encontro</option>
+          <option value="aniversario">🎂 Aniversário</option>
+          <option value="viagem">✈️ Viagem</option>
+          <option value="saida">🍽️ Saída</option>
+        </select>
       </div>
-      <div class="modal-field">
-        <label for="event-time">Horário</label>
-        <input type="time" id="event-time">
+      <div class="modal-field row-2">
+        <div>
+          <label for="event-date">Data *</label>
+          <input type="date" id="event-date" required>
+        </div>
+        <div>
+          <label for="event-time">Horário</label>
+          <input type="time" id="event-time">
+        </div>
       </div>
       <div class="modal-field">
         <label for="event-place">Local</label>
         <input type="text" id="event-place" placeholder="Ex: Restaurante Bossa">
       </div>
       <div class="modal-field">
+        <label for="event-recurrence">Repetição</label>
+        <select id="event-recurrence">
+          <option value="none">Não repetir</option>
+          <option value="weekly">Toda semana</option>
+          <option value="monthly">Todo mês</option>
+          <option value="yearly">Todo ano</option>
+        </select>
+      </div>
+      <div class="modal-field" id="rec-end-field" style="display:none">
+        <label for="event-recurrence-end">Repetir até</label>
+        <input type="date" id="event-recurrence-end">
+      </div>
+      <div class="modal-field">
         <label for="event-notes">Observações</label>
         <textarea id="event-notes" placeholder="Reserva feita, levar presente..."></textarea>
       </div>
       <div class="modal-actions">
-        <button type="submit" class="btn-primary">Salvar evento</button>
+        <button type="button" class="btn-danger" id="delete-event-btn" style="display:none">Excluir</button>
+        <button type="submit" class="btn-primary" id="event-submit-btn">Salvar evento</button>
       </div>
     </form>
   </div>

@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Dois - Listas</title>
+<title>Dois - Lista</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -23,13 +23,12 @@
       <h1>✅ Listas</h1>
       <button class="fab-inline" id="add-list-btn" aria-label="Nova lista">+</button>
     </div>
-    <div id="lists-wrap"></div>
+    <div class="lists-scroll" id="lists-wrap"></div>
     <div id="items-section" style="display:none">
       <div class="items-header">
-        <h2 id="active-list-name"></h2>
-        <button class="fab-inline sm" id="add-item-btn" aria-label="Novo item">+</button>
+        <button class="fab-sm" id="add-item-btn" aria-label="Adicionar item">+ Item</button>
       </div>
-      <ul id="items-list" role="list"></ul>
+      <ul class="items-ul" id="items-list"></ul>
     </div>
   </main>
   <nav class="bottom-nav">
@@ -40,16 +39,17 @@
     <a href="perfil.html" class="nav-item"><span class="nav-icon">👤</span><span>Perfil</span></a>
   </nav>
 </div>
+<!-- Modal nova lista -->
 <div class="modal-overlay" id="list-modal">
   <div class="modal-box">
     <div class="modal-header">
       <h3>Nova lista</h3>
-      <button class="modal-close" id="list-modal-close" aria-label="Fechar">✕</button>
+      <button class="modal-close" id="list-modal-close">✕</button>
     </div>
     <form class="modal-form" id="list-form" autocomplete="off">
       <div class="modal-field">
-        <label for="list-title-input">Nome da lista *</label>
-        <input type="text" id="list-title-input" placeholder="Ex: Filmes para assistir" required>
+        <label for="list-title-input">Nome da lista</label>
+        <input type="text" id="list-title-input" placeholder="Ex: Compras, Filmes para ver..." required>
       </div>
       <div class="modal-actions">
         <button type="submit" class="btn-primary">Criar lista</button>
@@ -57,16 +57,25 @@
     </form>
   </div>
 </div>
+<!-- Modal novo item -->
 <div class="modal-overlay" id="item-modal">
   <div class="modal-box">
     <div class="modal-header">
       <h3>Novo item</h3>
-      <button class="modal-close" id="item-modal-close" aria-label="Fechar">✕</button>
+      <button class="modal-close" id="item-modal-close">✕</button>
     </div>
     <form class="modal-form" id="item-form" autocomplete="off">
       <div class="modal-field">
         <label for="item-title-input">Item *</label>
         <input type="text" id="item-title-input" placeholder="Ex: Comprar flores" required>
+      </div>
+      <div class="modal-field">
+        <label for="item-due-date">Data limite</label>
+        <input type="date" id="item-due-date">
+      </div>
+      <div class="modal-field">
+        <label for="item-assign">Responsável</label>
+        <select id="item-assign"></select>
       </div>
       <div class="modal-actions">
         <button type="submit" class="btn-primary">Adicionar</button>
@@ -80,8 +89,7 @@
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js')
-        .catch((err) => console.warn('SW não registrado:', err));
+      navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
     });
   }
 </script>

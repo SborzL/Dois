@@ -23,7 +23,7 @@
       <h1>📍 Lugares</h1>
       <button class="fab-inline" id="add-place-btn" aria-label="Adicionar lugar">+</button>
     </div>
-    <div class="filter-scroll" id="cat-filters"></div>
+    <div class="chip-row" id="cat-filters"></div>
     <div id="places-list"></div>
   </main>
   <nav class="bottom-nav">
@@ -47,19 +47,29 @@
       </div>
       <div class="modal-field">
         <label for="place-address">Endereço</label>
-        <input type="text" id="place-address" placeholder="Ex: Asa Norte, Brasília">
+        <input type="text" id="place-address" placeholder="Rua, bairro ou cidade">
       </div>
       <div class="modal-field">
-        <label for="place-category">Categoria</label>
-        <select id="place-category"></select>
+        <label for="place-maps-url">Link Google Maps</label>
+        <input type="url" id="place-maps-url" placeholder="https://maps.google.com/...">
+      </div>
+      <div class="modal-field row-2">
+        <div>
+          <label for="place-category">Categoria</label>
+          <select id="place-category"></select>
+        </div>
+        <div>
+          <label for="place-rating">Avaliação</label>
+          <select id="place-rating"></select>
+        </div>
       </div>
       <div class="modal-field">
         <label for="place-status">Status</label>
         <select id="place-status"></select>
       </div>
       <div class="modal-actions">
+        <button type="button" class="btn-danger" id="delete-btn" style="display:none">Excluir</button>
         <button type="submit" class="btn-primary">Salvar</button>
-        <button type="button" class="btn-danger" id="delete-btn" style="display:none">Remover lugar</button>
       </div>
     </form>
   </div>
@@ -70,8 +80,7 @@
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js')
-        .catch((err) => console.warn('SW não registrado:', err));
+      navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
     });
   }
 </script>
