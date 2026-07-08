@@ -18,7 +18,9 @@
 </head>
 <body>
 <div class="phone">
-  <main class="content">
+
+  <!-- TELA 1: lista de lugares -->
+  <main class="content" id="screen-list">
     <div class="page-header">
       <h1>📍 Lugares</h1>
       <button class="fab-inline" id="add-place-btn" aria-label="Adicionar lugar">+</button>
@@ -26,6 +28,21 @@
     <div class="chip-row" id="cat-filters"></div>
     <div id="places-list"></div>
   </main>
+
+  <!-- TELA 2: detalhe do lugar -->
+  <main class="content hidden" id="screen-detail">
+    <div class="page-header detail-header">
+      <button class="back-btn" id="back-btn" aria-label="Voltar">‹</button>
+      <div class="header-title-wrap">
+        <h1 id="detail-name"></h1>
+        <span id="detail-category-badge"></span>
+      </div>
+      <button class="btn-icon" id="detail-edit-btn" aria-label="Editar">✏️</button>
+    </div>
+
+    <div class="detail-body" id="detail-body"></div>
+  </main>
+
   <nav class="bottom-nav">
     <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span><span>Início</span></a>
     <a href="lugares.html" class="nav-item active"><span class="nav-icon">📍</span><span>Lugares</span></a>
@@ -34,6 +51,8 @@
     <a href="perfil.html" class="nav-item"><span class="nav-icon">👤</span><span>Perfil</span></a>
   </nav>
 </div>
+
+<!-- Modal lugar -->
 <div class="modal-overlay" id="place-modal">
   <div class="modal-box">
     <div class="modal-header">
@@ -59,14 +78,39 @@
           <select id="place-category"></select>
         </div>
         <div>
-          <label for="place-rating">Avaliação</label>
-          <select id="place-rating"></select>
+          <label for="place-status">Status</label>
+          <select id="place-status"></select>
         </div>
       </div>
+
+      <!-- Avaliações por categoria -->
       <div class="modal-field">
-        <label for="place-status">Status</label>
-        <select id="place-status"></select>
+        <label>Avaliações</label>
+        <div class="ratings-grid">
+          <div class="rating-row">
+            <span class="rating-label">🏡 Ambiente</span>
+            <div class="star-group" data-field="rating_ambiente"></div>
+          </div>
+          <div class="rating-row">
+            <span class="rating-label">🍽️ Comida</span>
+            <div class="star-group" data-field="rating_comida"></div>
+          </div>
+          <div class="rating-row">
+            <span class="rating-label">🤝 Atendimento</span>
+            <div class="star-group" data-field="rating_atendimento"></div>
+          </div>
+          <div class="rating-row">
+            <span class="rating-label">💰 Custo-benefício</span>
+            <div class="star-group" data-field="rating_custo"></div>
+          </div>
+        </div>
       </div>
+
+      <div class="modal-field">
+        <label for="place-notes">Observações</label>
+        <textarea id="place-notes" placeholder="Como foi a experiência? O que acharam do lugar?" rows="3"></textarea>
+      </div>
+
       <div class="modal-actions">
         <button type="button" class="btn-danger" id="delete-btn" style="display:none">Excluir</button>
         <button type="submit" class="btn-primary">Salvar</button>
@@ -74,6 +118,7 @@
     </form>
   </div>
 </div>
+
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="supabase-client.js"></script>
 <script src="lugares.js"></script>

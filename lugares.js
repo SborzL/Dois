@@ -1,11 +1,21 @@
 let currentUser = null;
 let coupleId = null;
 let editingId = null;
+let detailId = null;
 let allPlaces = [];
+
 const categorias = ['Restaurante','Café','Cinema','Parque','Barzinho','Viagem','Outro'];
 const statusOpts = ['quero ir','agendado','já fomos'];
 const statusLabels = { 'quero ir': '📌 Quero ir', 'agendado': '🗓️ Agendado', 'já fomos': '✅ Já fomos' };
+const statusColors = { 'quero ir': 'status-quero', 'agendado': 'status-agendado', 'já fomos': 'status-fomos' };
+const RATING_FIELDS = [
+  { key: 'rating_ambiente',     label: '🏡 Ambiente' },
+  { key: 'rating_comida',       label: '🍽️ Comida' },
+  { key: 'rating_atendimento',  label: '🤝 Atendimento' },
+  { key: 'rating_custo',        label: '💰 Custo-benefício' },
+];
 
+// ── INIT ────────────────────────────────────────────────────────────
 async function init() {
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session) { window.location.href = 'login.html'; return; }
@@ -16,8 +26,86 @@ async function init() {
   buildCategoryFilter();
   await loadPlaces();
   setupModal();
+  document.getElementById('back-btn').addEventListener('click', showListScreen);
+  document.getElementById('detail-edit-btn').addEventListener('click', () => openEdit(detailId));
 }
 
+// ── TELAS ────────────────────────────────────────────────────────────
+function showListScreen() {
+  document.getElementById('screen-list').classList.remove('hidden');
+  document.getElementById('screen-detail').classList.add('hidden');
+  detailId = null;
+}
+function showDetailScreen(id) {
+  const p = allPlaces.find(x => x.id === id); if (!p) return;
+  detailId = id;
+  document.getElementById('screen-list').classList.add('hidden');
+  document.getElementById('screen-detail').classList.remove('hidden');
+  renderDetail(p);
+}
+
+// ── DETALHE ──────────────────────────────────────────────────────────
+function renderDetail(p) {
+  document.getElementById('detail-name').textContent = p.name;
+  const catBadge = document.getElementById('detail-category-badge');
+  catBadge.textContent = p.category || '';
+  catBadge.className = p.category ? 'chip-sm' : '';
+
+  // calcula media
+  const vals = RATING_FIELDS.map(f => p[f.key]).filter(v => v != null && v > 0);
+  const avg = vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length) : null;
+
+  let html = '';
+
+  // status + média
+  html += `<div class="detail-top">`;
+  html += `<span class="status-badge ${statusColors[p.status] || 'status-quero'}">${statusLabels[p.status] || p.status}</span>`;
+  if (avg !== null) html += `<span class="avg-badge">⭐ ${avg.toFixed(1)}</span>`;
+  html += `</div>`;
+
+  // endereço + maps
+  if (p.address || p.maps_url) {
+    html += `<div class="detail-section">`;
+    if (p.address) html += `<div class="detail-addr">📍 ${esc(p.address)}</div>`;
+    if (p.maps_url) html += `<a href="${esc(p.maps_url)}" target="_blank" rel="noopener" class="maps-btn">🗺️ Abrir no Google Maps</a>`;
+    html += `</div>`;
+  }
+
+  // avaliações por categoria
+  const hasAny = RATING_FIELDS.some(f => p[f.key] > 0);
+  if (hasAny) {
+    html += `<div class="detail-section">`;
+    html += `<div class="detail-section-title">Avaliações</div>`;
+    html += `<div class="detail-ratings">`;
+    RATING_FIELDS.forEach(f => {
+      const val = p[f.key] || 0;
+      if (!val) return;
+      html += `<div class="detail-rating-row">
+        <span class="detail-rating-label">${f.label}</span>
+        <span class="detail-stars">${starsHtml(val)}</span>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // observações
+  if (p.notes) {
+    html += `<div class="detail-section">`;
+    html += `<div class="detail-section-title">Observações</div>`;
+    html += `<div class="detail-notes">${esc(p.notes).replace(/\n/g, '<br>')}</div>`;
+    html += `</div>`;
+  }
+
+  document.getElementById('detail-body').innerHTML = html;
+}
+
+function starsHtml(val) {
+  let s = '';
+  for (let i = 1; i <= 5; i++) s += `<span class="star-d ${i <= val ? 'on' : ''}">★</span>`;
+  return s;
+}
+
+// ── LISTA ────────────────────────────────────────────────────────────
 function buildCategoryFilter() {
   const wrap = document.getElementById('cat-filters');
   if (!wrap) return;
@@ -33,8 +121,8 @@ function buildCategoryFilter() {
 }
 
 async function loadPlaces() {
-  const { data: places } = await supabaseClient.from('places').select('*').eq('couple_id', coupleId).order('created_at', { ascending: false });
-  allPlaces = places || [];
+  const { data } = await supabaseClient.from('places').select('*').eq('couple_id', coupleId).order('created_at', { ascending: false });
+  allPlaces = data || [];
   renderPlaces(allPlaces);
 }
 
@@ -45,63 +133,56 @@ function renderPlaces(places) {
     return;
   }
   lista.innerHTML = places.map(p => {
-    const stars = p.rating ? '⭐'.repeat(p.rating) : '';
-    const mapsBtn = p.maps_url ? `<a href="${esc(p.maps_url)}" target="_blank" class="maps-link" rel="noopener">🗺️ Ver no Maps</a>` : '';
+    const vals = RATING_FIELDS.map(f => p[f.key]).filter(v => v > 0);
+    const avg = vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : null;
     return `<div class="place-card" data-id="${p.id}">
       <div class="place-info">
         <p class="place-name">${esc(p.name)}</p>
         ${p.address ? `<p class="place-addr">📍 ${esc(p.address)}</p>` : ''}
-        ${stars ? `<p class="place-stars">${stars}</p>` : ''}
         <div class="place-meta">
           ${p.category ? `<span class="chip-sm">${esc(p.category)}</span>` : ''}
-          <span class="status-badge status-${(p.status||'quero ir').replace(/ /g,'-')}">${statusLabels[p.status]||p.status}</span>
+          <span class="status-badge ${statusColors[p.status]||'status-quero'}">${statusLabels[p.status]||p.status}</span>
+          ${avg ? `<span class="avg-badge">⭐ ${avg}</span>` : ''}
         </div>
-        ${mapsBtn}
       </div>
-      <button class="btn-icon edit-btn" data-id="${p.id}" aria-label="Editar lugar">✏️</button>
+      <span class="place-arrow">›</span>
     </div>`;
   }).join('');
 
-  lista.querySelectorAll('.edit-btn').forEach(btn => {
-    btn.addEventListener('click', () => openEdit(btn.dataset.id));
-  });
   lista.querySelectorAll('.place-card').forEach(card => {
-    let timer;
-    card.addEventListener('touchstart', () => { timer = setTimeout(() => confirmDelete(card.dataset.id), 600); }, { passive: true });
-    card.addEventListener('touchend', () => clearTimeout(timer));
-    card.addEventListener('touchcancel', () => clearTimeout(timer));
+    card.addEventListener('click', () => showDetailScreen(card.dataset.id));
   });
 }
 
-function openEdit(id) {
-  const p = allPlaces.find(x => x.id === id); if (!p) return;
-  editingId = id;
-  document.getElementById('modal-title-text').textContent = 'Editar lugar';
-  document.getElementById('place-name').value = p.name;
-  document.getElementById('place-address').value = p.address || '';
-  document.getElementById('place-category').value = p.category || '';
-  document.getElementById('place-status').value = p.status || 'quero ir';
-  document.getElementById('place-rating').value = p.rating || '';
-  document.getElementById('place-maps-url').value = p.maps_url || '';
-  document.getElementById('delete-btn').style.display = 'block';
-  openModal();
-}
-
+// ── MODAL ────────────────────────────────────────────────────────────
 function setupModal() {
-  const modal = document.getElementById('place-modal');
-  const form = document.getElementById('place-form');
+  const modal  = document.getElementById('place-modal');
+  const form   = document.getElementById('place-form');
   const catSel = document.getElementById('place-category');
   const statusSel = document.getElementById('place-status');
-  const ratingSel = document.getElementById('place-rating');
 
   catSel.innerHTML = `<option value="">Sem categoria</option>` + categorias.map(c => `<option value="${c}">${c}</option>`).join('');
   statusSel.innerHTML = statusOpts.map(s => `<option value="${s}">${statusLabels[s]}</option>`).join('');
-  ratingSel.innerHTML = `<option value="">Sem avaliação</option>` + [1,2,3,4,5].map(n => `<option value="${n}">${'⭐'.repeat(n)} (${n})</option>`).join('');
+
+  // montar estrelas clicáveis
+  document.querySelectorAll('.star-group').forEach(group => {
+    const field = group.dataset.field;
+    for (let i = 1; i <= 5; i++) {
+      const btn = document.createElement('button');
+      btn.type = 'button';
+      btn.className = 'star-btn';
+      btn.dataset.val = i;
+      btn.textContent = '★';
+      btn.addEventListener('click', () => setStars(group, i));
+      group.appendChild(btn);
+    }
+  });
 
   document.getElementById('add-place-btn').addEventListener('click', () => {
     editingId = null;
     document.getElementById('modal-title-text').textContent = 'Novo lugar';
     form.reset();
+    document.querySelectorAll('.star-group').forEach(g => setStars(g, 0));
     document.getElementById('delete-btn').style.display = 'none';
     openModal();
   });
@@ -112,40 +193,78 @@ function setupModal() {
   document.getElementById('delete-btn').addEventListener('click', async () => {
     if (!editingId || !confirm('Remover este lugar?')) return;
     await supabaseClient.from('places').delete().eq('id', editingId);
-    closeModal(); loadPlaces();
+    closeModal(); showListScreen(); loadPlaces();
   });
 
   form.addEventListener('submit', async e => {
     e.preventDefault();
     const nameVal = document.getElementById('place-name').value.trim();
     if (!nameVal) return;
-    const submitBtn = form.querySelector('button[type="submit"]');
-    submitBtn.disabled = true;
+    const btn = form.querySelector('button[type="submit"]');
+    btn.disabled = true;
+
+    const ratingVals = {};
+    document.querySelectorAll('.star-group').forEach(g => {
+      ratingVals[g.dataset.field] = getStars(g) || null;
+    });
+
     const payload = {
       couple_id: coupleId,
       name: nameVal,
       address: document.getElementById('place-address').value.trim() || null,
       category: document.getElementById('place-category').value || null,
       status: document.getElementById('place-status').value,
-      rating: document.getElementById('place-rating').value ? parseInt(document.getElementById('place-rating').value) : null,
-      maps_url: document.getElementById('place-maps-url').value.trim() || null
+      maps_url: document.getElementById('place-maps-url').value.trim() || null,
+      notes: document.getElementById('place-notes').value.trim() || null,
+      ...ratingVals
     };
+
     if (editingId) {
       await supabaseClient.from('places').update(payload).eq('id', editingId);
     } else {
       await supabaseClient.from('places').insert(payload);
     }
-    submitBtn.disabled = false;
-    closeModal(); loadPlaces();
+    btn.disabled = false;
+    closeModal();
+    await loadPlaces();
+    if (editingId && detailId) {
+      const updated = allPlaces.find(x => x.id === editingId);
+      if (updated) renderDetail(updated);
+      showDetailScreen(editingId);
+    }
   });
 }
 
-function confirmDelete(id) {
-  if (!confirm('Remover este lugar?')) return;
-  supabaseClient.from('places').delete().eq('id', id).then(() => loadPlaces());
+function openEdit(id) {
+  const p = allPlaces.find(x => x.id === id); if (!p) return;
+  editingId = id;
+  document.getElementById('modal-title-text').textContent = 'Editar lugar';
+  document.getElementById('place-name').value = p.name;
+  document.getElementById('place-address').value = p.address || '';
+  document.getElementById('place-maps-url').value = p.maps_url || '';
+  document.getElementById('place-category').value = p.category || '';
+  document.getElementById('place-status').value = p.status || 'quero ir';
+  document.getElementById('place-notes').value = p.notes || '';
+  RATING_FIELDS.forEach(f => {
+    const g = document.querySelector(`.star-group[data-field="${f.key}"]`);
+    if (g) setStars(g, p[f.key] || 0);
+  });
+  document.getElementById('delete-btn').style.display = 'block';
+  openModal();
 }
 
-function openModal() { document.getElementById('place-modal').classList.add('open'); }
+// estrelas
+function setStars(group, val) {
+  group.dataset.value = val;
+  group.querySelectorAll('.star-btn').forEach(btn => {
+    btn.classList.toggle('on', parseInt(btn.dataset.val) <= val);
+  });
+}
+function getStars(group) {
+  return parseInt(group.dataset.value) || 0;
+}
+
+function openModal()  { document.getElementById('place-modal').classList.add('open'); }
 function closeModal() { document.getElementById('place-modal').classList.remove('open'); }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
