@@ -3,11 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<title>Dois - Checklist</title>
+<title>Dois - Listas</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="index.css">
 <link rel="stylesheet" href="checklist.css">
+<link rel="stylesheet" href="modal.css">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,133 +18,69 @@
 <meta name="theme-color" content="#1f7a5c">
 </head>
 <body>
-
 <div class="phone">
   <main class="content">
-
     <div class="page-header">
-      <div>
-        <h1>Checklists</h1>
-        <p class="page-sub" id="progress-text">4 de 10 itens concluídos</p>
-      </div>
-      <button class="btn-add" id="btn-add-list" aria-label="Adicionar lista">+</button>
+      <h1>✅ Listas</h1>
+      <button class="fab-inline" id="add-list-btn" aria-label="Nova lista">+</button>
     </div>
 
-    <div class="progress-block">
-      <div class="progress-bar">
-        <div class="progress-fill" id="progress-fill" style="width:40%"></div>
+    <div id="lists-wrap"></div>
+
+    <div id="items-section" style="display:none">
+      <div class="items-header">
+        <h2 id="active-list-name"></h2>
+        <button class="fab-inline sm" id="add-item-btn" aria-label="Novo item">+</button>
       </div>
-      <p class="progress-label" id="progress-label">40% completo</p>
+      <ul id="items-list" role="list"></ul>
     </div>
-
-    <section class="list-card" data-list="viagem">
-      <button class="list-header" data-toggle="viagem">
-        <span class="list-icon">✈️</span>
-        <div class="list-title-wrap">
-          <p class="list-title">Viagem para o litoral</p>
-          <div class="mini-progress">
-            <div class="mini-progress-fill" style="width:40%"></div>
-          </div>
-        </div>
-        <span class="list-count">2/5</span>
-        <span class="chevron">▾</span>
-      </button>
-      <ul class="item-list" id="items-viagem">
-        <li class="item done">
-          <input type="checkbox" checked>
-          <span>Reservar pousada</span>
-          <span class="item-tag tag-p">P</span>
-        </li>
-        <li class="item done">
-          <input type="checkbox" checked>
-          <span>Comprar protetor solar</span>
-          <span class="item-tag tag-a">A</span>
-        </li>
-        <li class="item">
-          <input type="checkbox">
-          <span>Fazer mala</span>
-          <span class="item-tag tag-p">P</span>
-        </li>
-        <li class="item">
-          <input type="checkbox">
-          <span>Abastecer o carro</span>
-          <span class="item-tag tag-p">P</span>
-        </li>
-        <li class="item">
-          <input type="checkbox">
-          <span>Baixar músicas para a viagem</span>
-          <span class="item-tag tag-a">A</span>
-        </li>
-        <li class="add-item-row">
-          <span class="add-icon">+</span>
-          <input type="text" placeholder="Adicionar item...">
-        </li>
-      </ul>
-    </section>
-
-    <section class="list-card" data-list="jantar">
-      <button class="list-header" data-toggle="jantar">
-        <span class="list-icon">🍷</span>
-        <div class="list-title-wrap">
-          <p class="list-title">Jantar especial</p>
-          <div class="mini-progress">
-            <div class="mini-progress-fill" style="width:66%"></div>
-          </div>
-        </div>
-        <span class="list-count">2/3</span>
-        <span class="chevron">▾</span>
-      </button>
-      <ul class="item-list collapsed" id="items-jantar">
-        <li class="item done"><input type="checkbox" checked><span>Escolher restaurante</span></li>
-        <li class="item done"><input type="checkbox" checked><span>Reservar mesa</span></li>
-        <li class="item"><input type="checkbox"><span>Comprar presente</span></li>
-      </ul>
-    </section>
-
-    <section class="list-card" data-list="coisas">
-      <button class="list-header" data-toggle="coisas">
-        <span class="list-icon">💚</span>
-        <div class="list-title-wrap">
-          <p class="list-title">Coisas para fazer juntos</p>
-          <div class="mini-progress">
-            <div class="mini-progress-fill" style="width:0%"></div>
-          </div>
-        </div>
-        <span class="list-count">0/2</span>
-        <span class="chevron">▾</span>
-      </button>
-      <ul class="item-list collapsed" id="items-coisas">
-        <li class="item"><input type="checkbox"><span>Assistir aquele filme novo</span></li>
-        <li class="item"><input type="checkbox"><span>Cozinhar uma receita nova</span></li>
-      </ul>
-    </section>
-
-    <button class="btn-new-list" id="btn-new-list">+ Nova lista</button>
-
   </main>
 
   <nav class="bottom-nav">
-    <a href="index.html" class="nav-item">
-      <span class="nav-icon">🏠</span>
-      <span>Início</span>
-    </a>
-    <a href="lugares.html" class="nav-item">
-      <span class="nav-icon">📍</span>
-      <span>Lugares</span>
-    </a>
-    <a href="checklist.html" class="nav-item active">
-      <span class="nav-icon">✅</span>
-      <span>Lista</span>
-    </a>
-    <a href="agenda.html" class="nav-item">
-      <span class="nav-icon">📅</span>
-      <span>Agenda</span>
-    </a>
-    <a href="perfil.html" class="nav-item">
-      <span class="nav-icon">👤</span>
-      <span>Perfil</span>
-    </a>
+    <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span><span>Início</span></a>
+    <a href="lugares.html" class="nav-item"><span class="nav-icon">📍</span><span>Lugares</span></a>
+    <a href="checklist.html" class="nav-item active"><span class="nav-icon">✅</span><span>Lista</span></a>
+    <a href="agenda.html" class="nav-item"><span class="nav-icon">📅</span><span>Agenda</span></a>
+    <a href="perfil.html" class="nav-item"><span class="nav-icon">👤</span><span>Perfil</span></a>
   </nav>
+</div>
+
+<!-- MODAL NOVA LISTA -->
+<div class="modal-overlay" id="list-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Nova lista</h3>
+      <button class="modal-close" id="list-modal-close" aria-label="Fechar">✕</button>
+    </div>
+    <form class="modal-form" id="list-form" autocomplete="off">
+      <div class="modal-field">
+        <label for="list-title-input">Nome da lista *</label>
+        <input type="text" id="list-title-input" placeholder="Ex: Filmes para assistir" required>
+      </div>
+      <div class="modal-actions">
+        <button type="submit" class="btn-primary">Criar lista</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- MODAL NOVO ITEM -->
+<div class="modal-overlay" id="item-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Novo item</h3>
+      <button class="modal-close" id="item-modal-close" aria-label="Fechar">✕</button>
+    </div>
+    <form class="modal-form" id="item-form" autocomplete="off">
+      <div class="modal-field">
+        <label for="item-title-input">Item *</label>
+        <input type="text" id="item-title-input" placeholder="Ex: Comprar flores" required>
+      </div>
+      <div class="modal-actions">
+        <button type="submit" class="btn-primary">Adicionar</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>

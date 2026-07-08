@@ -7,7 +7,9 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="index.css">
 <link rel="stylesheet" href="agenda.css">
+<link rel="stylesheet" href="modal.css">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -16,92 +18,84 @@
 <meta name="theme-color" content="#1f7a5c">
 </head>
 <body>
-
 <div class="phone">
   <main class="content">
-
     <div class="page-header">
-      <div>
-        <h1>Agenda</h1>
-        <p class="page-sub" id="events-count">4 eventos este mês</p>
-      </div>
-      <button class="btn-add" id="btn-add-event" aria-label="Adicionar evento">+</button>
+      <h1>📅 Agenda</h1>
+      <button class="fab-inline" id="add-event-btn" aria-label="Adicionar evento">+</button>
     </div>
 
-    <div class="calendar-card">
-      <div class="calendar-header">
-        <button class="cal-nav" id="prev-month" aria-label="Mês anterior">‹</button>
-        <p class="cal-title" id="cal-title">Julho 2026</p>
-        <button class="cal-nav" id="next-month" aria-label="Próximo mês">›</button>
+    <!-- Calendário -->
+    <div class="cal-card">
+      <div class="cal-nav">
+        <button class="cal-arrow" id="cal-prev" aria-label="Mês anterior">‹</button>
+        <span id="cal-month-label"></span>
+        <button class="cal-arrow" id="cal-next" aria-label="Próximo mês">›</button>
       </div>
-
-      <div class="calendar-weekdays">
+      <div class="cal-weekdays">
         <span>D</span><span>S</span><span>T</span><span>Q</span><span>Q</span><span>S</span><span>S</span>
       </div>
-
-      <div class="calendar-grid" id="calendar-grid"></div>
+      <div class="cal-grid" id="cal-grid"></div>
     </div>
 
-    <div class="day-block">
-      <h2 id="day-title">Dia 8 — Sem eventos</h2>
-      <div class="empty-day" id="empty-day">
-        <span class="empty-icon">📅</span>
-        <p>Nenhum evento neste dia.</p>
-        <button class="btn-add-event-inline" id="btn-add-event-inline">+ Adicionar evento</button>
+    <!-- Eventos do dia selecionado -->
+    <div id="day-events" style="display:none">
+      <div class="section-header">
+        <h2 id="day-events-title"></h2>
       </div>
-      <ul class="day-events hidden" id="day-events"></ul>
+      <div id="day-events-list"></div>
     </div>
 
-    <div class="upcoming-block">
+    <!-- Próximos eventos -->
+    <div class="section-header">
       <h2>Próximos eventos</h2>
-      <ul class="upcoming-list" id="upcoming-list">
-        <li class="upcoming-item">
-          <div class="upcoming-date">
-            <span class="upcoming-day">14</span>
-            <span class="upcoming-month">JUL</span>
-          </div>
-          <div class="upcoming-info">
-            <p class="upcoming-title">Jantar no Bossa</p>
-            <p class="upcoming-sub">19h30 · Restaurante Bossa Nova</p>
-          </div>
-        </li>
-        <li class="upcoming-item">
-          <div class="upcoming-date">
-            <span class="upcoming-day">18</span>
-            <span class="upcoming-month">JUL</span>
-          </div>
-          <div class="upcoming-info">
-            <p class="upcoming-title">Cinema com Ana</p>
-            <p class="upcoming-sub">20h · Shopping Iguatemi</p>
-          </div>
-        </li>
-      </ul>
+      <span id="month-counter" class="counter-badge"></span>
     </div>
-
+    <div id="upcoming-list"></div>
   </main>
 
   <nav class="bottom-nav">
-    <a href="index.html" class="nav-item">
-      <span class="nav-icon">🏠</span>
-      <span>Início</span>
-    </a>
-    <a href="lugares.html" class="nav-item">
-      <span class="nav-icon">📍</span>
-      <span>Lugares</span>
-    </a>
-    <a href="checklist.html" class="nav-item">
-      <span class="nav-icon">✅</span>
-      <span>Lista</span>
-    </a>
-    <a href="agenda.html" class="nav-item active">
-      <span class="nav-icon">📅</span>
-      <span>Agenda</span>
-    </a>
-    <a href="perfil.html" class="nav-item">
-      <span class="nav-icon">👤</span>
-      <span>Perfil</span>
-    </a>
+    <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span><span>Início</span></a>
+    <a href="lugares.html" class="nav-item"><span class="nav-icon">📍</span><span>Lugares</span></a>
+    <a href="checklist.html" class="nav-item"><span class="nav-icon">✅</span><span>Lista</span></a>
+    <a href="agenda.html" class="nav-item active"><span class="nav-icon">📅</span><span>Agenda</span></a>
+    <a href="perfil.html" class="nav-item"><span class="nav-icon">👤</span><span>Perfil</span></a>
   </nav>
+</div>
+
+<!-- MODAL EVENTO -->
+<div class="modal-overlay" id="event-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Novo evento</h3>
+      <button class="modal-close" id="event-modal-close" aria-label="Fechar">✕</button>
+    </div>
+    <form class="modal-form" id="event-form" autocomplete="off">
+      <div class="modal-field">
+        <label for="event-title">Título *</label>
+        <input type="text" id="event-title" placeholder="Ex: Jantar romântico" required>
+      </div>
+      <div class="modal-field">
+        <label for="event-date">Data *</label>
+        <input type="date" id="event-date" required>
+      </div>
+      <div class="modal-field">
+        <label for="event-time">Horário</label>
+        <input type="time" id="event-time">
+      </div>
+      <div class="modal-field">
+        <label for="event-place">Local</label>
+        <input type="text" id="event-place" placeholder="Ex: Restaurante Bossa">
+      </div>
+      <div class="modal-field">
+        <label for="event-notes">Observações</label>
+        <textarea id="event-notes" placeholder="Reserva feita, levar presente..."></textarea>
+      </div>
+      <div class="modal-actions">
+        <button type="submit" class="btn-primary">Salvar evento</button>
+      </div>
+    </form>
+  </div>
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
