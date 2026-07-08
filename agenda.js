@@ -8,8 +8,8 @@ async function init() {
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session) { window.location.href = 'login.html'; return; }
   currentUser = session.user;
-  const { data: m } = await supabaseClient.from('couple_members').select('couple_id').eq('user_id', currentUser.id).single();
-  if (!m) { window.location.href = 'perfil.html'; return; }
+  const { data: m } = await supabaseClient.from('couple_members').select('couple_id').eq('user_id', currentUser.id).maybeSingle();
+  if (!m?.couple_id) { window.location.href = 'conectar.html'; return; }
   coupleId = m.couple_id;
   const today = new Date();
   viewYear = today.getFullYear(); viewMonth = today.getMonth();
@@ -28,7 +28,7 @@ async function loadEvents() {
 }
 
 function renderCalendar() {
-  const meses = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const meses = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
   document.getElementById('cal-month-label').textContent = `${meses[viewMonth]} ${viewYear}`;
   const grid = document.getElementById('cal-grid');
   const firstDay = new Date(viewYear, viewMonth, 1).getDay();
@@ -42,7 +42,7 @@ function renderCalendar() {
   let html = '';
   for (let i = 0; i < firstDay; i++) html += '<div></div>';
   for (let d = 1; d <= daysInMonth; d++) {
-    const iso = `${viewYear}-${String(viewMonth+1).padStart(2,'0')}-${String(d).padStart(2,'0')}`;
+    const iso = `${viewYear}-${String(viewMonth + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
     const cls = ['cal-day', iso === today ? 'today' : '', iso === selectedDate ? 'selected' : '', eventDays.has(d) ? 'has-event' : ''].filter(Boolean).join(' ');
     html += `<button class="${cls}" data-date="${iso}">${d}</button>`;
   }
@@ -55,8 +55,8 @@ function renderDayEvents() {
   const title = document.getElementById('day-events-title');
   const list = document.getElementById('day-events-list');
   const d = new Date(selectedDate + 'T12:00:00');
-  const dias = ['Domingo','Segunda','Terça','Quarta','Quinta','Sexta','Sábado'];
-  const meses = ['jan','fev','mar','abr','mai','jun','jul','ago','set','out','nov','dez'];
+  const dias = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
+  const meses = ['jan', 'fev', 'mar', 'abr', 'mai', 'jun', 'jul', 'ago', 'set', 'out', 'nov', 'dez'];
   title.textContent = `${dias[d.getDay()]}, ${d.getDate()} de ${meses[d.getMonth()]}`;
 
   const evs = allEvents.filter(e => e.event_date === selectedDate);
@@ -65,7 +65,7 @@ function renderDayEvents() {
     document.getElementById('add-from-day')?.addEventListener('click', () => openModal(selectedDate));
   } else {
     list.innerHTML = evs.map(e => eventCard(e)).join('');
-    attachLongPress(list);
+    attachEventActions(list, evs);
   }
   section.style.display = 'block';
 }
@@ -87,25 +87,36 @@ function renderUpcoming() {
     return;
   }
   list.innerHTML = upcoming.map(e => eventCard(e)).join('');
-  attachLongPress(list);
+  attachEventActions(list, upcoming);
 }
 
 function eventCard(e) {
   const d = new Date(e.event_date + 'T12:00:00');
-  const sem = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
-  const hora = e.event_time ? e.event_time.slice(0,5).replace(':','h') : '';
+  const sem = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
+  const hora = e.event_time ? e.event_time.slice(0, 5).replace(':', 'h') : '';
   const sub = [hora, e.place].filter(Boolean).join(' · ');
   return `<div class="event-row" data-id="${e.id}">
     <div class="event-date-sm"><span>${sem[d.getDay()]}</span><span>${d.getDate()}</span></div>
     <div class="event-info"><p class="event-title">${esc(e.title)}</p>${sub ? `<p class="event-sub">${esc(sub)}</p>` : ''}</div>
+    <button class="btn-icon del-event-btn" data-id="${e.id}" aria-label="Remover evento">×</button>
   </div>`;
 }
 
-function attachLongPress(container) {
+function attachEventActions(container, events) {
+  // Botao de deletar visivel
+  container.querySelectorAll('.del-event-btn').forEach(btn => {
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      confirmDeleteEvent(btn.dataset.id);
+    });
+  });
+  // Long press no mobile como alternativa
   container.querySelectorAll('.event-row').forEach(row => {
     let t;
-    row.addEventListener('touchstart', () => { t = setTimeout(() => confirmDeleteEvent(row.dataset.id), 600); });
+    row.addEventListener('touchstart', () => { t = setTimeout(() => confirmDeleteEvent(row.dataset.id), 700); });
     row.addEventListener('touchend', () => clearTimeout(t));
+    row.addEventListener('touchcancel', () => clearTimeout(t));
+    row.addEventListener('touchmove', () => clearTimeout(t));
   });
 }
 
@@ -133,20 +144,26 @@ function setupModal() {
   modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('open'); });
   document.getElementById('event-form').addEventListener('submit', async e => {
     e.preventDefault();
+    const titleVal = document.getElementById('event-title').value.trim();
+    const dateVal = document.getElementById('event-date').value;
+    if (!titleVal || !dateVal) return;
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true;
     const payload = {
       couple_id: coupleId,
-      title: document.getElementById('event-title').value.trim(),
-      event_date: document.getElementById('event-date').value,
+      title: titleVal,
+      event_date: dateVal,
       event_time: document.getElementById('event-time').value || null,
       place: document.getElementById('event-place').value.trim() || null,
       notes: document.getElementById('event-notes').value.trim() || null
     };
     await supabaseClient.from('events').insert(payload);
+    btn.disabled = false;
     modal.classList.remove('open');
     loadEvents();
   });
 }
 
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
 init();

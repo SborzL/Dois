@@ -1,16 +1,16 @@
 let currentUser = null;
 let coupleId = null;
 let editingId = null;
-const categorias = ['Restaurante','Café','Cinema','Parque','Barzinho','Viagem','Outro'];
-const statusOpts = ['quero ir','agendado','já fomos'];
+const categorias = ['Restaurante', 'Café', 'Cinema', 'Parque', 'Barzinho', 'Viagem', 'Outro'];
+const statusOpts = ['quero ir', 'agendado', 'já fomos'];
 const statusLabels = { 'quero ir': '📌 Quero ir', 'agendado': '🗓️ Agendado', 'já fomos': '✅ Já fomos' };
 
 async function init() {
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session) { window.location.href = 'login.html'; return; }
   currentUser = session.user;
-  const { data: m } = await supabaseClient.from('couple_members').select('couple_id').eq('user_id', currentUser.id).single();
-  if (!m) { window.location.href = 'perfil.html'; return; }
+  const { data: m } = await supabaseClient.from('couple_members').select('couple_id').eq('user_id', currentUser.id).maybeSingle();
+  if (!m?.couple_id) { window.location.href = 'conectar.html'; return; }
   coupleId = m.couple_id;
   buildCategoryFilter();
   await loadPlaces();
@@ -50,10 +50,10 @@ function renderPlaces(places) {
         ${p.address ? `<p class="place-addr">${esc(p.address)}</p>` : ''}
         <div class="place-meta">
           ${p.category ? `<span class="chip-sm">${esc(p.category)}</span>` : ''}
-          <span class="status-badge status-${(p.status||'quero ir').replace(' ','-')}">${statusLabels[p.status] || p.status}</span>
+          <span class="status-badge status-${(p.status || 'quero ir').replace(/ /g, '-')}">${statusLabels[p.status] || p.status}</span>
         </div>
       </div>
-      <button class="btn-icon edit-btn" data-id="${p.id}" aria-label="Editar">✏️</button>
+      <button class="btn-icon edit-btn" data-id="${p.id}" aria-label="Editar lugar">✏️</button>
     </div>`).join('');
 
   lista.querySelectorAll('.edit-btn').forEach(btn => {
@@ -64,6 +64,7 @@ function renderPlaces(places) {
     let timer;
     card.addEventListener('touchstart', () => { timer = setTimeout(() => confirmDelete(card.dataset.id), 600); });
     card.addEventListener('touchend', () => clearTimeout(timer));
+    card.addEventListener('touchcancel', () => clearTimeout(timer));
   });
 }
 
@@ -101,17 +102,22 @@ function setupModal() {
 
   document.getElementById('delete-btn').addEventListener('click', async () => {
     if (!editingId) return;
+    if (!confirm('Remover este lugar?')) return;
     await supabaseClient.from('places').delete().eq('id', editingId);
     closeModal(); loadPlaces();
   });
 
   form.addEventListener('submit', async e => {
     e.preventDefault();
+    const nameVal = document.getElementById('place-name').value.trim();
+    if (!nameVal) return;
+    const submitBtn = form.querySelector('button[type="submit"]');
+    submitBtn.disabled = true;
     const payload = {
       couple_id: coupleId,
-      name: document.getElementById('place-name').value.trim(),
-      address: document.getElementById('place-address').value.trim(),
-      category: document.getElementById('place-category').value,
+      name: nameVal,
+      address: document.getElementById('place-address').value.trim() || null,
+      category: document.getElementById('place-category').value || null,
       status: document.getElementById('place-status').value
     };
     if (editingId) {
@@ -119,6 +125,7 @@ function setupModal() {
     } else {
       await supabaseClient.from('places').insert(payload);
     }
+    submitBtn.disabled = false;
     closeModal(); loadPlaces();
   });
 }
@@ -130,6 +137,6 @@ function confirmDelete(id) {
 
 function openModal() { document.getElementById('place-modal').classList.add('open'); }
 function closeModal() { document.getElementById('place-modal').classList.remove('open'); }
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
 init();

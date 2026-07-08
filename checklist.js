@@ -6,8 +6,8 @@ async function init() {
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session) { window.location.href = 'login.html'; return; }
   currentUser = session.user;
-  const { data: m } = await supabaseClient.from('couple_members').select('couple_id').eq('user_id', currentUser.id).single();
-  if (!m) { window.location.href = 'perfil.html'; return; }
+  const { data: m } = await supabaseClient.from('couple_members').select('couple_id').eq('user_id', currentUser.id).maybeSingle();
+  if (!m?.couple_id) { window.location.href = 'conectar.html'; return; }
   coupleId = m.couple_id;
   await loadLists();
   setupListModal();
@@ -60,11 +60,11 @@ function renderItems(items) {
   }
   ul.innerHTML = items.map(item => `
     <li class="checklist-item ${item.done ? 'done' : ''}" data-id="${item.id}">
-      <button class="check-btn" data-id="${item.id}" data-done="${item.done}" aria-label="Marcar">
+      <button class="check-btn" data-id="${item.id}" data-done="${item.done}" aria-label="${item.done ? 'Desmarcar' : 'Marcar como feito'}">
         ${item.done ? '✅' : '○'}
       </button>
       <span class="item-text">${esc(item.title)}</span>
-      <button class="btn-icon del-item" data-id="${item.id}" aria-label="Remover">×</button>
+      <button class="btn-icon del-item" data-id="${item.id}" aria-label="Remover item">×</button>
     </li>`).join('');
 
   ul.querySelectorAll('.check-btn').forEach(b => b.addEventListener('click', () => toggleItem(b.dataset.id, b.dataset.done === 'true')));
@@ -98,7 +98,10 @@ function setupListModal() {
     e.preventDefault();
     const title = document.getElementById('list-title-input').value.trim();
     if (!title) return;
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true;
     await supabaseClient.from('checklists').insert({ couple_id: coupleId, title });
+    btn.disabled = false;
     modal.classList.remove('open');
     document.getElementById('list-form').reset();
     await loadLists();
@@ -107,20 +110,26 @@ function setupListModal() {
 
 function setupItemModal() {
   const modal = document.getElementById('item-modal');
-  document.getElementById('add-item-btn').addEventListener('click', () => modal.classList.add('open'));
+  document.getElementById('add-item-btn').addEventListener('click', () => {
+    if (!activeListId) return;
+    modal.classList.add('open');
+  });
   document.getElementById('item-modal-close').addEventListener('click', () => modal.classList.remove('open'));
   modal.addEventListener('click', e => { if (e.target === modal) modal.classList.remove('open'); });
   document.getElementById('item-form').addEventListener('submit', async e => {
     e.preventDefault();
     const title = document.getElementById('item-title-input').value.trim();
     if (!title || !activeListId) return;
+    const btn = e.target.querySelector('button[type="submit"]');
+    btn.disabled = true;
     await supabaseClient.from('checklist_items').insert({ checklist_id: activeListId, title, done: false });
+    btn.disabled = false;
     modal.classList.remove('open');
     document.getElementById('item-form').reset();
     loadItems(activeListId);
   });
 }
 
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
 init();

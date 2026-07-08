@@ -1,5 +1,5 @@
 let currentUserId = null;
-let myCoupleId = null; // casal criado por este usuário enquanto aguarda
+let myCoupleId = null;
 let pollingTimer = null;
 
 async function init() {
@@ -7,9 +7,15 @@ async function init() {
   if (!session) { window.location.href = 'login.html'; return; }
   currentUserId = session.user.id;
 
-  // Se já tem casal, vai direto para o app
+  // Garante que o perfil existe
+  await supabaseClient.from('profiles').upsert({
+    id: currentUserId,
+    name: session.user.email.split('@')[0]
+  }, { onConflict: 'id', ignoreDuplicates: true });
+
+  // Se ja tem casal, vai direto para o app
   const { data: member } = await supabaseClient
-    .from('couple_members').select('couple_id').eq('user_id', currentUserId).single();
+    .from('couple_members').select('couple_id').eq('user_id', currentUserId).maybeSingle();
   if (member?.couple_id) {
     window.location.href = 'index.html';
     return;
@@ -36,7 +42,6 @@ function setupTabs() {
     tabTenho.classList.add('active'); tabCriar.classList.remove('active');
     tabTenho.setAttribute('aria-selected', 'true'); tabCriar.setAttribute('aria-selected', 'false');
     panelEntrar.classList.remove('hidden'); panelCriar.classList.add('hidden');
-    // Para o polling se trocar de aba
     stopPolling();
   });
 }
@@ -56,6 +61,14 @@ function setupCriarCodigo() {
   btn.addEventListener('click', async () => {
     btn.disabled = true;
     btn.textContent = 'Gerando...';
+
+    // Se ja criou um casal antes nesta sessao, remove-o para evitar duplicatas
+    if (myCoupleId) {
+      await supabaseClient.from('couple_members').delete().eq('couple_id', myCoupleId).eq('user_id', currentUserId);
+      await supabaseClient.from('couples').delete().eq('id', myCoupleId);
+      myCoupleId = null;
+      stopPolling();
+    }
 
     const code = gerarCodigoAleatorio();
 
@@ -82,20 +95,18 @@ function setupCriarCodigo() {
     codeBox.classList.remove('hidden');
     btn.textContent = 'Aguardando seu par...';
 
-    // Inicia polling: verifica a cada 3s se o par entrou
     startPolling(myCoupleId);
   });
 }
 
 function startPolling(coupleId) {
-  stopPolling(); // garante que não haja dois timers
+  stopPolling();
   pollingTimer = setInterval(async () => {
     const { data: members } = await supabaseClient
       .from('couple_members').select('user_id').eq('couple_id', coupleId);
 
     if (members && members.length >= 2) {
       stopPolling();
-      // Par conectado! Vai para o app
       window.location.href = 'index.html';
     }
   }, 3000);
@@ -105,10 +116,17 @@ function stopPolling() {
   if (pollingTimer) { clearInterval(pollingTimer); pollingTimer = null; }
 }
 
+// Para o polling se o usuario fechar/sair da pagina
+window.addEventListener('pagehide', stopPolling);
+window.addEventListener('beforeunload', stopPolling);
+
 function setupEntrarCodigo() {
   const btn = document.getElementById('btn-entrar-codigo');
   const input = document.getElementById('input-codigo');
   const errorEl = document.getElementById('codigo-error');
+
+  // Formata o input automaticamente para maiusculas
+  input.addEventListener('input', () => { input.value = input.value.toUpperCase(); });
 
   btn.addEventListener('click', async () => {
     const code = input.value.trim().toUpperCase();
@@ -122,9 +140,8 @@ function setupEntrarCodigo() {
 
     btn.disabled = true; btn.textContent = 'Conectando...';
 
-    // Busca o casal pelo código
     const { data: couple, error: findError } = await supabaseClient
-      .from('couples').select('id').eq('invite_code', code).single();
+      .from('couples').select('id').eq('invite_code', code).maybeSingle();
 
     if (findError || !couple) {
       errorEl.textContent = 'Código inválido. Verifique e tente novamente.';
@@ -133,18 +150,17 @@ function setupEntrarCodigo() {
       return;
     }
 
-    // Verifica se este usuário já é membro deste casal
+    // Verifica se este usuario ja e membro deste casal
     const { data: jaMembro } = await supabaseClient
       .from('couple_members').select('id')
-      .eq('couple_id', couple.id).eq('user_id', currentUserId).single();
+      .eq('couple_id', couple.id).eq('user_id', currentUserId).maybeSingle();
 
     if (jaMembro) {
-      // Já é membro, vai direto
       window.location.href = 'index.html';
       return;
     }
 
-    // Verifica se casal já tem 2 membros
+    // Verifica se casal ja tem 2 membros
     const { data: existingMembers } = await supabaseClient
       .from('couple_members').select('id').eq('couple_id', couple.id);
 
@@ -155,7 +171,6 @@ function setupEntrarCodigo() {
       return;
     }
 
-    // Entra no casal
     const { error: memberError } = await supabaseClient
       .from('couple_members').insert({ couple_id: couple.id, user_id: currentUserId });
 
@@ -166,7 +181,6 @@ function setupEntrarCodigo() {
       return;
     }
 
-    // Sucesso — vai para o app
     window.location.href = 'index.html';
   });
 }

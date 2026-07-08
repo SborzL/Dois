@@ -7,7 +7,7 @@ const senhaInput = document.getElementById('senha');
 const emailError = document.getElementById('email-error');
 const senhaError = document.getElementById('senha-error');
 
-function setActiveTab(entrar){
+function setActiveTab(entrar) {
   tabEntrar.classList.toggle('active', entrar);
   tabCriar.classList.toggle('active', !entrar);
   tabEntrar.setAttribute('aria-selected', entrar);
@@ -18,48 +18,66 @@ tabEntrar.addEventListener('click', () => setActiveTab(true));
 tabCriar.addEventListener('click', () => setActiveTab(false));
 linkCriar.addEventListener('click', (e) => { e.preventDefault(); setActiveTab(false); });
 
-form.addEventListener('submit', async function(e){
+form.addEventListener('submit', async function (e) {
   e.preventDefault();
   let valid = true;
 
-  if(!emailInput.value.includes('@')){
+  if (!emailInput.value.includes('@')) {
     emailError.classList.add('show');
     valid = false;
   } else {
     emailError.classList.remove('show');
   }
 
-  if(senhaInput.value.length < 6){
+  if (senhaInput.value.length < 6) {
     senhaError.classList.add('show');
     valid = false;
   } else {
     senhaError.classList.remove('show');
   }
 
-  if(!valid) return;
+  if (!valid) return;
+
+  const submitBtn = form.querySelector('button[type="submit"]');
+  const originalText = submitBtn.textContent;
+  submitBtn.disabled = true;
+  submitBtn.textContent = 'Aguarde...';
 
   const isCriarConta = tabCriar.classList.contains('active');
 
-  if(isCriarConta){
+  if (isCriarConta) {
     const { data, error } = await supabaseClient.auth.signUp({
       email: emailInput.value,
       password: senhaInput.value
     });
 
-    if(error){
+    if (error) {
       alert('Erro ao criar conta: ' + error.message);
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText;
       return;
     }
 
-    alert('Conta criada! Verifique seu e-mail para confirmar, se necessário.');
+    // Cria perfil automaticamente apos o cadastro
+    if (data?.user) {
+      await supabaseClient.from('profiles').upsert({
+        id: data.user.id,
+        name: emailInput.value.split('@')[0]
+      });
+    }
+
+    // Redireciona direto — Supabase nao exige confirmacao por padrao
+    window.location.href = 'conectar.html';
   } else {
     const { data, error } = await supabaseClient.auth.signInWithPassword({
       email: emailInput.value,
       password: senhaInput.value
     });
 
-    if(error){
+    if (error) {
       alert('Erro ao entrar: ' + error.message);
+      submitBtn.disabled = false;
+      submitBtn.textContent = originalText;
       return;
     }
 
@@ -70,7 +88,7 @@ form.addEventListener('submit', async function(e){
       .eq('user_id', data.user.id)
       .maybeSingle();
 
-    if(memberData){
+    if (memberData?.couple_id) {
       window.location.href = 'index.html';
     } else {
       window.location.href = 'conectar.html';
