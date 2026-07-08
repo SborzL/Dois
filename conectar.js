@@ -1,6 +1,7 @@
 let currentUserId = null;
 let myCoupleId = null;
 let pollingTimer = null;
+let isRedirecting = false;
 
 async function init() {
   const { data: { session } } = await supabaseClient.auth.getSession();
@@ -13,7 +14,7 @@ async function init() {
     name: session.user.email.split('@')[0]
   }, { onConflict: 'id', ignoreDuplicates: true });
 
-  // Se ja tem casal, vai direto para o app
+  // Se ja tem casal, vai direto
   const { data: member } = await supabaseClient
     .from('couple_members').select('couple_id').eq('user_id', currentUserId).maybeSingle();
   if (member?.couple_id) {
@@ -62,7 +63,7 @@ function setupCriarCodigo() {
     btn.disabled = true;
     btn.textContent = 'Gerando...';
 
-    // Se ja criou um casal antes nesta sessao, remove-o para evitar duplicatas
+    // Limpa casal anterior criado nesta sessao
     if (myCoupleId) {
       await supabaseClient.from('couple_members').delete().eq('couple_id', myCoupleId).eq('user_id', currentUserId);
       await supabaseClient.from('couples').delete().eq('id', myCoupleId);
@@ -71,7 +72,6 @@ function setupCriarCodigo() {
     }
 
     const code = gerarCodigoAleatorio();
-
     const { data: couple, error: coupleError } = await supabaseClient
       .from('couples').insert({ invite_code: code }).select().single();
 
@@ -102,11 +102,13 @@ function setupCriarCodigo() {
 function startPolling(coupleId) {
   stopPolling();
   pollingTimer = setInterval(async () => {
+    if (isRedirecting) return;
     const { data: members } = await supabaseClient
       .from('couple_members').select('user_id').eq('couple_id', coupleId);
 
     if (members && members.length >= 2) {
       stopPolling();
+      isRedirecting = true;
       window.location.href = 'index.html';
     }
   }, 3000);
@@ -116,7 +118,6 @@ function stopPolling() {
   if (pollingTimer) { clearInterval(pollingTimer); pollingTimer = null; }
 }
 
-// Para o polling se o usuario fechar/sair da pagina
 window.addEventListener('pagehide', stopPolling);
 window.addEventListener('beforeunload', stopPolling);
 
@@ -125,8 +126,9 @@ function setupEntrarCodigo() {
   const input = document.getElementById('input-codigo');
   const errorEl = document.getElementById('codigo-error');
 
-  // Formata o input automaticamente para maiusculas
-  input.addEventListener('input', () => { input.value = input.value.toUpperCase(); });
+  input.addEventListener('input', () => {
+    input.value = input.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+  });
 
   btn.addEventListener('click', async () => {
     const code = input.value.trim().toUpperCase();
@@ -150,7 +152,7 @@ function setupEntrarCodigo() {
       return;
     }
 
-    // Verifica se este usuario ja e membro deste casal
+    // Verifica se ja e membro
     const { data: jaMembro } = await supabaseClient
       .from('couple_members').select('id')
       .eq('couple_id', couple.id).eq('user_id', currentUserId).maybeSingle();
@@ -160,7 +162,7 @@ function setupEntrarCodigo() {
       return;
     }
 
-    // Verifica se casal ja tem 2 membros
+    // Verifica limite de 2 membros
     const { data: existingMembers } = await supabaseClient
       .from('couple_members').select('id').eq('couple_id', couple.id);
 
