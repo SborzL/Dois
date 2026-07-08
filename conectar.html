@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Dois - Conectar</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="conectar.css">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dois">
+<meta name="theme-color" content="#1f7a5c">
+</head>
+<body>
+
+<div class="phone">
+  <div class="hero">
+    <div class="hero-icon">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2">
+        <path d="M20.8 4.6a5.5 5.5 0 0 0-7.8 0L12 5.6l-1-1a5.5 5.5 0 0 0-7.8 7.8l1 1L12 21l7.8-7.6 1-1a5.5 5.5 0 0 0 0-7.8z"/>
+      </svg>
+    </div>
+    <h1>Vamos te conectar</h1>
+    <p>Crie um código para convidar seu par, ou digite o código que ela(e) te enviou.</p>
+  </div>
+
+  <div class="form-area">
+    <div class="tabs" role="tablist">
+      <button class="tab active" id="tab-criar-codigo" role="tab" aria-selected="true">Criar código</button>
+      <button class="tab" id="tab-tenho-codigo" role="tab" aria-selected="false">Já tenho um código</button>
+    </div>
+
+    <div class="panel" id="panel-criar">
+      <p class="panel-text">Clique abaixo para gerar seu código único de convite e envie para seu par.</p>
+      <button class="btn-primary" id="btn-gerar-codigo">Gerar código</button>
+
+      <div class="code-box hidden" id="code-box">
+        <p class="code-label">Seu código</p>
+        <p class="code-value" id="code-value">------</p>
+        <p class="code-hint">Envie esse código para seu par pelo WhatsApp. Assim que ela(e) digitar, vocês ficam conectados automaticamente. 💚</p>
+      </div>
+    </div>
+
+    <div class="panel hidden" id="panel-entrar">
+      <label for="input-codigo">Código recebido</label>
+      <input type="text" id="input-codigo" placeholder="Ex: AB12CD" maxlength="8" autocomplete="off" autocapitalize="characters">
+      <button class="btn-primary" id="btn-entrar-codigo">Conectar</button>
+      <p class="error-msg" id="codigo-error">Código inválido. Verifique e tente novamente.</p>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase-client.js"></script>
+<script src="conectar.js"></script>
+</body>
+</html>
