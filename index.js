@@ -10,11 +10,9 @@ const FRASES = [
   '“Nosso amor é feito de pequenos momentos que duram para sempre.”',
   '“Obrigado(a) por fazer do simples algo extraordinário.”',
 ];
-
 const DIAS = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
 const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-const SEM   = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
-
+const SEM = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
 let currentUser = null;
 let coupleId = null;
 
@@ -28,135 +26,104 @@ async function init() {
   await Promise.all([loadHero(), loadNextEvents(), loadLastPlace(), loadListsSummary(), loadCounts()]);
 }
 
-// ── HERO ────────────────────────────────────────────────────────────
 async function loadHero() {
   const now = new Date();
   document.getElementById('hero-date').textContent = `${DIAS[now.getDay()]}, ${now.getDate()} de ${MESES[now.getMonth()]}`;
 
-  // nome do usuário
-  const { data: prof } = await supabaseClient.from('profiles').select('name, couple_since').eq('id', currentUser.id).maybeSingle();
+  const { data: prof } = await supabaseClient.from('profiles').select('name').eq('id', currentUser.id).maybeSingle();
   const nome = prof?.name?.split(' ')[0] || currentUser.email.split('@')[0];
   document.getElementById('hero-greeting').textContent = `Olá, ${nome} 💚`;
 
-  // dias juntos (usando couple_since do perfil ou da tabela couples)
-  const { data: couple } = await supabaseClient.from('couples').select('created_at').eq('id', coupleId).maybeSingle();
-  const since = couple?.created_at ? new Date(couple.created_at) : null;
+  const { data: couple } = await supabaseClient.from('couples').select('created_at, display_name, anniversary_date, custom_phrase').eq('id', coupleId).maybeSingle();
+
   const daysEl = document.getElementById('hero-days');
+  const since = couple?.anniversary_date || couple?.created_at;
   if (since) {
-    const diff = Math.floor((now - since) / (1000 * 60 * 60 * 24));
+    const diff = diffDays(since);
     daysEl.innerHTML = `<span class="days-num">${diff}</span><span class="days-label">dias<br>juntos</span>`;
   } else {
     daysEl.style.display = 'none';
   }
 
-  // frase do dia (baseada no dia do ano)
-  const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
-  document.getElementById('hero-frase').textContent = FRASES[dayOfYear % FRASES.length];
+  const phraseEl = document.getElementById('hero-frase');
+  if (couple?.custom_phrase?.trim()) {
+    phraseEl.textContent = couple.custom_phrase.trim();
+  } else {
+    const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
+    phraseEl.textContent = FRASES[dayOfYear % FRASES.length];
+  }
+
+  if (couple?.display_name?.trim()) {
+    document.getElementById('hero-greeting').textContent = `${couple.display_name.trim()} 💚`;
+  }
+
+  if (couple?.anniversary_date) {
+    const ann = new Date(couple.anniversary_date + 'T12:00:00');
+    const label = `Desde ${ann.getDate()} de ${MESES[ann.getMonth()]}`;
+    const existing = document.getElementById('hero-anniversary');
+    if (existing) existing.textContent = label;
+    else {
+      const p = document.createElement('p');
+      p.id = 'hero-anniversary';
+      p.className = 'hero-date';
+      p.textContent = label;
+      document.querySelector('.hero-top > div').appendChild(p);
+    }
+  }
 }
 
-// ── PRÓXIMOS EVENTOS ─────────────────────────────────────────────
 async function loadNextEvents() {
   const hoje = new Date().toISOString().split('T')[0];
-  const { data: evs } = await supabaseClient.from('events').select('*')
-    .eq('couple_id', coupleId).gte('event_date', hoje)
-    .order('event_date', { ascending: true }).order('event_time', { ascending: true }).limit(3);
-
+  const { data: evs } = await supabaseClient.from('events').select('*').eq('couple_id', coupleId).gte('event_date', hoje).order('event_date', { ascending: true }).order('event_time', { ascending: true }).limit(3);
   const bloco = document.getElementById('next-events-block');
   if (!evs?.length) {
     bloco.innerHTML = `<div class="empty-card"><p>Nenhum evento agendado ainda.</p><a href="agenda.html" class="link-sm">Adicionar evento →</a></div>`;
     return;
   }
-
   bloco.innerHTML = evs.map(ev => {
     const d = new Date(ev.event_date + 'T12:00:00');
     const hora = ev.event_time ? ev.event_time.slice(0,5).replace(':','h') : '';
     const sub = [hora, ev.place].filter(Boolean).join(' · ');
     const isHoje = ev.event_date === hoje;
-    return `<div class="event-card ${isHoje ? 'event-today' : ''}">
-      <div class="event-date">
-        <span class="event-day">${SEM[d.getDay()]}</span>
-        <span class="event-num">${d.getDate()}</span>
-      </div>
-      <div class="event-info">
-        <p class="event-title">${esc(ev.title)}</p>
-        ${sub ? `<p class="event-sub">${esc(sub)}</p>` : ''}
-      </div>
-      ${isHoje ? '<span class="hoje-badge">Hoje</span>' : ''}
-    </div>`;
+    return `<div class="event-card ${isHoje ? 'event-today' : ''}"><div class="event-date"><span class="event-day">${SEM[d.getDay()]}</span><span class="event-num">${d.getDate()}</span></div><div class="event-info"><p class="event-title">${esc(ev.title)}</p>${sub ? `<p class="event-sub">${esc(sub)}</p>` : ''}</div>${isHoje ? '<span class="hoje-badge">Hoje</span>' : ''}</div>`;
   }).join('');
 }
 
-// ── ÚTIMO LUGAR VISITADO ─────────────────────────────────────────
 async function loadLastPlace() {
-  const { data: places } = await supabaseClient.from('places').select('*')
-    .eq('couple_id', coupleId).eq('status', 'já fomos')
-    .order('created_at', { ascending: false }).limit(1);
-
+  const { data: places } = await supabaseClient.from('places').select('*').eq('couple_id', coupleId).eq('status', 'já fomos').order('created_at', { ascending: false }).limit(1);
   if (!places?.length) return;
   const p = places[0];
   document.getElementById('last-place-section').style.display = '';
-
-  const RATING_FIELDS = [
-    { key: 'rating_ambiente', label: 'Ambiente' },
-    { key: 'rating_comida', label: 'Comida' },
-    { key: 'rating_atendimento', label: 'Atendimento' },
-    { key: 'rating_custo', label: 'Custo' },
-  ];
-  const vals = RATING_FIELDS.map(f => p[f.key]).filter(v => v > 0);
+  const RATING_FIELDS = ['rating_ambiente','rating_comida','rating_atendimento','rating_custo'];
+  const vals = RATING_FIELDS.map(k => p[k]).filter(v => v > 0);
   const avg = vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : null;
   const stars = avg ? `<span class="avg-star">⭐ ${avg}</span>` : '';
   const mapsBtn = p.maps_url ? `<a href="${esc(p.maps_url)}" target="_blank" rel="noopener" class="maps-mini">🗺️ Maps</a>` : '';
-
-  document.getElementById('last-place-block').innerHTML = `
-    <div class="place-mini-card">
-      <div class="place-mini-info">
-        <p class="place-mini-name">${esc(p.name)}</p>
-        ${p.address ? `<p class="place-mini-addr">${esc(p.address)}</p>` : ''}
-        <div class="place-mini-meta">${stars}${p.category ? `<span class="chip-xs">${esc(p.category)}</span>` : ''}${mapsBtn}</div>
-      </div>
-    </div>`;
+  document.getElementById('last-place-block').innerHTML = `<div class="place-mini-card"><div class="place-mini-info"><p class="place-mini-name">${esc(p.name)}</p>${p.address ? `<p class="place-mini-addr">${esc(p.address)}</p>` : ''}<div class="place-mini-meta">${stars}${p.category ? `<span class="chip-xs">${esc(p.category)}</span>` : ''}${mapsBtn}</div></div></div>`;
 }
 
-// ── RESUMO LISTAS ───────────────────────────────────────────────────
 async function loadListsSummary() {
-  const { data: lists } = await supabaseClient.from('checklists').select('id, title, emoji')
-    .eq('couple_id', coupleId).order('created_at', { ascending: false }).limit(3);
+  const { data: lists } = await supabaseClient.from('checklists').select('id, title, emoji').eq('couple_id', coupleId).order('created_at', { ascending: false }).limit(3);
   if (!lists?.length) return;
-
-  const { data: items } = await supabaseClient.from('checklist_items')
-    .select('checklist_id, done')
-    .in('checklist_id', lists.map(l => l.id));
-
+  const { data: items } = await supabaseClient.from('checklist_items').select('checklist_id, done').in('checklist_id', lists.map(l => l.id));
   const countMap = {};
   (items || []).forEach(i => {
     if (!countMap[i.checklist_id]) countMap[i.checklist_id] = { total: 0, done: 0 };
     countMap[i.checklist_id].total++;
     if (i.done) countMap[i.checklist_id].done++;
   });
-
   const hasItems = lists.some(l => countMap[l.id]?.total > 0);
   if (!hasItems) return;
-
   document.getElementById('lists-section').style.display = '';
   document.getElementById('lists-block').innerHTML = lists.map(l => {
     const c = countMap[l.id] || { total: 0, done: 0 };
     if (!c.total) return '';
     const pct = Math.round((c.done / c.total) * 100);
     const emoji = l.emoji || '📋';
-    return `<div class="list-mini-row">
-      <span class="list-mini-emoji">${emoji}</span>
-      <div class="list-mini-info">
-        <div class="list-mini-top">
-          <span class="list-mini-name">${esc(l.title)}</span>
-          <span class="list-mini-count">${c.done}/${c.total}</span>
-        </div>
-        <div class="list-mini-track"><div class="list-mini-fill" style="width:${pct}%"></div></div>
-      </div>
-    </div>`;
+    return `<div class="list-mini-row"><span class="list-mini-emoji">${emoji}</span><div class="list-mini-info"><div class="list-mini-top"><span class="list-mini-name">${esc(l.title)}</span><span class="list-mini-count">${c.done}/${c.total}</span></div><div class="list-mini-track"><div class="list-mini-fill" style="width:${pct}%"></div></div></div></div>`;
   }).filter(Boolean).join('');
 }
 
-// ── CONTAGENS ACESSO RÁPIDO ────────────────────────────────────────
 async function loadCounts() {
   const hoje = new Date().toISOString().split('T')[0];
   const [{ count: pl }, { count: li }, { count: ev }] = await Promise.all([
@@ -169,6 +136,9 @@ async function loadCounts() {
   document.getElementById('count-eventos').textContent = `${ev||0} futuro${ev!==1?'s':''}`;
 }
 
+function diffDays(dateStr) {
+  const start = new Date(String(dateStr).includes('T') ? dateStr : dateStr + 'T12:00:00');
+  return Math.max(0, Math.floor((new Date() - start) / 86400000));
+}
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
 init();

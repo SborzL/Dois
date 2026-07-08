@@ -20,14 +20,45 @@
   <main class="content">
 
     <div class="profile-hero">
-      <div class="avatar" id="avatar-me"></div>
-      <div class="profile-hero-info">
-        <p class="profile-hero-name" id="hero-name">Carregando...</p>
-        <p class="profile-hero-email" id="hero-email"></p>
+      <div class="profile-hero-top">
+        <div class="avatar avatar-xl" id="avatar-me"></div>
+        <div class="profile-hero-info">
+          <p class="profile-hero-name" id="hero-name">Carregando...</p>
+          <p class="profile-hero-email" id="hero-email"></p>
+          <p class="profile-hero-tag" id="hero-tagline">Personalize seu cantinho 💚</p>
+        </div>
       </div>
     </div>
 
-    <!-- Casal conectado -->
+    <section class="section-card section-highlight">
+      <div class="section-head-row">
+        <div>
+          <p class="section-title">✨ Hero da tela inicial</p>
+          <p class="section-desc">Tudo que você editar aqui aparece no topo da página inicial.</p>
+        </div>
+      </div>
+
+      <div class="field-stack">
+        <label class="field-label" for="couple-display-name">Apelido do casal</label>
+        <input type="text" id="couple-display-name" class="field-input" placeholder="Ex: Nós dois, Meu amor e eu">
+        <p class="field-sub">Aparece como título complementar no Hero.</p>
+      </div>
+
+      <div class="field-stack">
+        <label class="field-label" for="couple-anniversary">Data especial</label>
+        <input type="date" id="couple-anniversary" class="field-input">
+        <p class="field-sub">Use para aniversário de namoro, casamento ou começo da história.</p>
+      </div>
+
+      <div class="field-stack">
+        <label class="field-label" for="couple-custom-phrase">Frase personalizada</label>
+        <textarea id="couple-custom-phrase" class="field-input field-textarea" rows="3" placeholder="Ex: O melhor lugar do mundo ainda é ao seu lado."></textarea>
+        <p class="field-sub">Se preencher, ela substitui a frase automática do dia.</p>
+      </div>
+
+      <button class="btn-save-wide" id="save-couple-btn">Salvar Hero</button>
+    </section>
+
     <section id="section-casal" class="section-card hidden">
       <p class="section-title">💚 Seu casal</p>
       <div class="partner-row">
@@ -38,34 +69,36 @@
         </div>
       </div>
       <div class="divider-line"></div>
-      <div class="code-share-row">
-        <div>
-          <p class="field-label">Código do casal</p>
-          <p class="code-display" id="invite-code-display">------</p>
+      <div class="couple-mini-grid">
+        <div class="mini-stat">
+          <span class="mini-label">Código</span>
+          <span class="mini-value mono" id="invite-code-display">------</span>
         </div>
-        <button class="btn-outline" id="copy-code-btn">Copiar</button>
+        <div class="mini-stat">
+          <span class="mini-label">Dias juntos</span>
+          <span class="mini-value" id="couple-days-count">—</span>
+        </div>
       </div>
+      <button class="btn-outline" id="copy-code-btn">Copiar código</button>
       <button class="btn-danger-outline" id="btn-desconectar">🔗 Desconectar do casal</button>
     </section>
 
-    <!-- Sem casal -->
     <section id="section-sem-casal" class="section-card hidden">
       <p class="section-title">🔗 Conectar casal</p>
       <p class="section-desc">Você ainda não está vinculado(a) a nenhum casal.</p>
       <a href="conectar.html" class="btn-primary-block">💚 Conectar agora</a>
     </section>
 
-    <!-- Nome -->
     <section class="section-card">
-      <p class="section-title">👤 Meu nome</p>
-      <div class="field-row">
+      <p class="section-title">👤 Meu perfil</p>
+      <div class="field-stack">
+        <label class="field-label" for="profile-name">Meu nome</label>
         <input type="text" id="profile-name" class="field-input" placeholder="Como quer ser chamado(a)?" autocomplete="nickname">
-        <button class="btn-save" id="save-profile-btn">Salvar</button>
       </div>
       <p class="field-sub" id="profile-email"></p>
+      <button class="btn-save-wide" id="save-profile-btn">Salvar perfil</button>
     </section>
 
-    <!-- Conta -->
     <section class="section-card">
       <p class="section-title">⚙️ Conta</p>
       <button class="btn-row" id="btn-alterar-senha">Alterar senha <span class="chevron">›</span></button>
@@ -83,7 +116,6 @@
   </nav>
 </div>
 
-<!-- Modal: desconectar -->
 <div class="modal-overlay" id="modal-desconectar">
   <div class="modal-box">
     <div class="modal-header">
@@ -98,7 +130,6 @@
   </div>
 </div>
 
-<!-- Modal: alterar senha -->
 <div class="modal-overlay" id="modal-senha">
   <div class="modal-box">
     <div class="modal-header">
