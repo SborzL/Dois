@@ -30,33 +30,41 @@
       </div>
     </div>
 
+    <!-- Hero colapsável -->
     <section class="section-card section-highlight">
-      <div class="section-head-row">
-        <div>
-          <p class="section-title">✨ Hero da tela inicial</p>
-          <p class="section-desc">Tudo que você editar aqui aparece no topo da página inicial.</p>
+      <button class="collapse-toggle" id="hero-toggle" aria-expanded="false">
+        <div class="collapse-toggle-left">
+          <span class="collapse-icon">✨</span>
+          <div>
+            <p class="collapse-title">Hero da tela inicial</p>
+            <p class="collapse-sub">Apelido, data especial e frase</p>
+          </div>
         </div>
-      </div>
+        <span class="collapse-chevron" id="hero-chevron">›</span>
+      </button>
+      <div class="collapse-body" id="hero-body">
+        <p class="section-desc" style="padding-top:2px">Tudo que você editar aqui aparece no topo da página inicial.</p>
 
-      <div class="field-stack">
-        <label class="field-label" for="couple-display-name">Apelido do casal</label>
-        <input type="text" id="couple-display-name" class="field-input" placeholder="Ex: Nós dois, Meu amor e eu">
-        <p class="field-sub">Aparece como título complementar no Hero.</p>
-      </div>
+        <div class="field-stack">
+          <label class="field-label" for="couple-display-name">Apelido do casal</label>
+          <input type="text" id="couple-display-name" class="field-input" placeholder="Ex: Nós dois, Meu amor e eu">
+          <p class="field-sub">Aparece como título no Hero.</p>
+        </div>
 
-      <div class="field-stack">
-        <label class="field-label" for="couple-anniversary">Data especial</label>
-        <input type="date" id="couple-anniversary" class="field-input">
-        <p class="field-sub">Use para aniversário de namoro, casamento ou começo da história.</p>
-      </div>
+        <div class="field-stack">
+          <label class="field-label" for="couple-anniversary">Data especial</label>
+          <input type="date" id="couple-anniversary" class="field-input">
+          <p class="field-sub">Aniversário de namoro, casamento, etc.</p>
+        </div>
 
-      <div class="field-stack">
-        <label class="field-label" for="couple-custom-phrase">Frase personalizada</label>
-        <textarea id="couple-custom-phrase" class="field-input field-textarea" rows="3" placeholder="Ex: O melhor lugar do mundo ainda é ao seu lado."></textarea>
-        <p class="field-sub">Se preencher, ela substitui a frase automática do dia.</p>
-      </div>
+        <div class="field-stack">
+          <label class="field-label" for="couple-custom-phrase">Frase personalizada</label>
+          <textarea id="couple-custom-phrase" class="field-input field-textarea" rows="3" placeholder="Ex: O melhor lugar do mundo ainda é ao seu lado."></textarea>
+          <p class="field-sub">Substitui a frase automática do dia.</p>
+        </div>
 
-      <button class="btn-save-wide" id="save-couple-btn">Salvar Hero</button>
+        <button class="btn-save-wide" id="save-couple-btn">Salvar Hero</button>
+      </div>
     </section>
 
     <section id="section-casal" class="section-card hidden">
@@ -164,6 +172,15 @@
       navigator.serviceWorker.register('./service-worker.js').catch(() => {});
     });
   }
+  // collapsible
+  const toggle = document.getElementById('hero-toggle');
+  const body   = document.getElementById('hero-body');
+  const chev   = document.getElementById('hero-chevron');
+  toggle.addEventListener('click', () => {
+    const open = body.classList.toggle('open');
+    toggle.setAttribute('aria-expanded', open);
+    chev.style.transform = open ? 'rotate(90deg)' : 'rotate(0deg)';
+  });
 </script>
 </body>
 </html>
