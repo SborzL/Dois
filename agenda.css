@@ -43,7 +43,7 @@ body{
 }
 .page-header h1{font-size:1.3rem;font-weight:700;}
 .fab-inline{
-  width:40px;height:40px;
+  width:44px;height:44px;
   border-radius:var(--radius-md);
   background:var(--color-primary);
   color:#fff;
@@ -72,7 +72,7 @@ body{
 }
 #cal-month-label{font-size:0.95rem;font-weight:700;}
 .cal-arrow{
-  width:32px;height:32px;
+  width:44px;height:44px;
   border-radius:50%;
   border:1px solid var(--color-border);
   background:var(--color-bg);
@@ -165,6 +165,33 @@ body{
 .event-info{flex:1;min-width:0;}
 .event-title{font-size:0.9rem;font-weight:600;margin-bottom:0.15rem;}
 .event-sub{font-size:0.75rem;color:var(--color-text-muted);}
+/* Botao de deletar evento — touch target minimo de 44x44px */
+.btn-icon.del-event-btn{
+  min-width:44px;
+  min-height:44px;
+  width:44px;
+  height:44px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  border-radius:var(--radius-full);
+  border:none;
+  background:none;
+  color:var(--color-text-muted);
+  font-size:1.2rem;
+  cursor:pointer;
+  flex-shrink:0;
+  -webkit-tap-highlight-color:transparent;
+  transition:background 0.12s, color 0.12s;
+}
+.btn-icon.del-event-btn:hover{
+  background:#fee2e2;
+  color:#b91c1c;
+}
+.btn-icon.del-event-btn:active{
+  background:#fecaca;
+  color:#991b1b;
+}
 .empty-state{
   display:flex;
   flex-direction:column;

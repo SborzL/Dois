@@ -86,10 +86,12 @@ function renderUpcoming() {
     list.innerHTML = `<div class="empty-state small"><p>Nenhum evento futuro agendado.</p></div>`;
     return;
   }
+  // data-id no event-row garante que long-press e botao de deletar funcionem aqui tambem
   list.innerHTML = upcoming.map(e => eventCard(e)).join('');
   attachEventActions(list, upcoming);
 }
 
+// Gera o card HTML de um evento — data-id no wrapper garante que o long-press funcione
 function eventCard(e) {
   const d = new Date(e.event_date + 'T12:00:00');
   const sem = ['DOM', 'SEG', 'TER', 'QUA', 'QUI', 'SEX', 'SÁB'];
@@ -103,26 +105,27 @@ function eventCard(e) {
 }
 
 function attachEventActions(container, events) {
-  // Botao de deletar visivel
   container.querySelectorAll('.del-event-btn').forEach(btn => {
     btn.addEventListener('click', e => {
       e.stopPropagation();
       confirmDeleteEvent(btn.dataset.id);
     });
   });
-  // Long press no mobile como alternativa
+  // Long press como alternativa (mobile)
   container.querySelectorAll('.event-row').forEach(row => {
     let t;
-    row.addEventListener('touchstart', () => { t = setTimeout(() => confirmDeleteEvent(row.dataset.id), 700); });
+    row.addEventListener('touchstart', () => { t = setTimeout(() => confirmDeleteEvent(row.dataset.id), 700); }, { passive: true });
     row.addEventListener('touchend', () => clearTimeout(t));
     row.addEventListener('touchcancel', () => clearTimeout(t));
-    row.addEventListener('touchmove', () => clearTimeout(t));
+    row.addEventListener('touchmove', () => clearTimeout(t), { passive: true });
   });
 }
 
 async function confirmDeleteEvent(id) {
+  if (!id) return;
   if (!confirm('Remover este evento?')) return;
-  await supabaseClient.from('events').delete().eq('id', id);
+  const { error } = await supabaseClient.from('events').delete().eq('id', id);
+  if (error) { alert('Erro ao remover: ' + error.message); return; }
   loadEvents();
 }
 
