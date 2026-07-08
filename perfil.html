@@ -17,97 +17,63 @@
 </head>
 <body>
 <div class="phone">
-  <main class="content" id="main-content">
+  <main class="content">
 
-    <!-- Skeleton de carregamento -->
-    <div id="loading-state">
-      <div class="skeleton-block"></div>
-      <div class="skeleton-block short"></div>
-      <div class="skeleton-block"></div>
+    <div class="profile-hero">
+      <div class="avatar" id="avatar-me"></div>
+      <div class="profile-hero-info">
+        <p class="profile-hero-name" id="hero-name">Carregando...</p>
+        <p class="profile-hero-email" id="hero-email"></p>
+      </div>
     </div>
 
-    <!-- ===== ESTADO: CONECTADO ===== -->
-    <div id="state-connected" style="display:none">
-
-      <div class="section-label">Casal</div>
-      <div class="card couple-card">
-        <div class="couple-status">
-          <span class="status-dot connected"></span>
-          <span class="status-text">Conectados</span>
-        </div>
-        <div class="couple-avatars">
-          <div class="avatar" id="avatar-me"></div>
-          <span class="avatar-heart">💚</span>
-          <div class="avatar" id="avatar-partner"></div>
-        </div>
-        <div class="couple-names">
-          <span id="name-me" class="couple-name"></span>
-          <span class="couple-name-sep">&amp;</span>
-          <span id="name-partner" class="couple-name"></span>
-        </div>
-        <div class="code-row">
-          <div>
-            <p class="field-micro">Código do casal</p>
-            <p class="code-big" id="invite-code-display">------</p>
-          </div>
-          <button class="btn-copy" id="copy-code-btn">Copiar</button>
+    <!-- Casal conectado -->
+    <section id="section-casal" class="section-card hidden">
+      <p class="section-title">💚 Seu casal</p>
+      <div class="partner-row">
+        <div class="avatar sm" id="avatar-partner"></div>
+        <div>
+          <p class="partner-name" id="partner-name">---</p>
+          <p class="partner-sub">parceiro(a)</p>
         </div>
       </div>
-
-      <button class="btn-danger-outline" id="btn-desconectar">
-        🔗 Desconectar do casal
-      </button>
-
-    </div>
-
-    <!-- ===== ESTADO: SEM CASAL ===== -->
-    <div id="state-no-couple" style="display:none">
-
-      <div class="section-label">Casal</div>
-      <div class="card no-couple-card">
-        <div class="no-couple-icon">💔</div>
-        <p class="no-couple-title">Você não está conectado</p>
-        <p class="no-couple-sub">Conecte-se ao seu(sua) parceiro(a) para usar o app juntos.</p>
-        <a href="conectar.html" class="btn-primary-block">Conectar agora →</a>
-      </div>
-
-    </div>
-
-    <!-- ===== CONTA ===== -->
-    <div id="state-account" style="display:none">
-
-      <div class="section-label">Minha conta</div>
-      <div class="card">
-        <div class="account-row">
-          <div class="account-avatar" id="account-avatar"></div>
-          <div class="account-info">
-            <p class="account-name" id="account-name">---</p>
-            <p class="account-email" id="account-email">---</p>
-          </div>
+      <div class="divider-line"></div>
+      <div class="code-share-row">
+        <div>
+          <p class="field-label">Código do casal</p>
+          <p class="code-display" id="invite-code-display">------</p>
         </div>
+        <button class="btn-outline" id="copy-code-btn">Copiar</button>
       </div>
+      <button class="btn-danger-outline" id="btn-desconectar">🔗 Desconectar do casal</button>
+    </section>
 
-      <div class="section-label">Nome exibido</div>
-      <div class="card">
-        <div class="field-row">
-          <input type="text" id="profile-name" class="field-input" placeholder="Como quer ser chamado(a)?">
-          <button class="btn-save" id="save-profile-btn">Salvar</button>
-        </div>
-        <p class="field-hint">Este nome aparece para seu(sua) parceiro(a).</p>
+    <!-- Sem casal -->
+    <section id="section-sem-casal" class="section-card hidden">
+      <p class="section-title">🔗 Conectar casal</p>
+      <p class="section-desc">Você ainda não está vinculado(a) a nenhum casal.</p>
+      <a href="conectar.html" class="btn-primary-block">💚 Conectar agora</a>
+    </section>
+
+    <!-- Nome -->
+    <section class="section-card">
+      <p class="section-title">👤 Meu nome</p>
+      <div class="field-row">
+        <input type="text" id="profile-name" class="field-input" placeholder="Como quer ser chamado(a)?" autocomplete="nickname">
+        <button class="btn-save" id="save-profile-btn">Salvar</button>
       </div>
+      <p class="field-sub" id="profile-email"></p>
+    </section>
 
-      <div class="section-label">Segurança</div>
-      <div class="card">
-        <button class="btn-text" id="btn-reset-senha">🔐 Enviar link de redefinição de senha</button>
-        <p class="field-hint" id="reset-hint"></p>
-      </div>
+    <!-- Conta -->
+    <section class="section-card">
+      <p class="section-title">⚙️ Conta</p>
+      <button class="btn-row" id="btn-alterar-senha">Alterar senha <span class="chevron">›</span></button>
+    </section>
 
-      <button class="btn-logout" id="logout-btn">→ Sair da conta</button>
-
-    </div>
+    <button class="btn-logout" id="logout-btn">🚪 Sair da conta</button>
 
   </main>
-
   <nav class="bottom-nav">
     <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span><span>Início</span></a>
     <a href="lugares.html" class="nav-item"><span class="nav-icon">📍</span><span>Lugares</span></a>
@@ -117,15 +83,42 @@
   </nav>
 </div>
 
-<!-- Modal confirmar desconexão -->
-<div class="modal-overlay" id="modal-desconectar" style="display:none">
+<!-- Modal: desconectar -->
+<div class="modal-overlay" id="modal-desconectar">
   <div class="modal-box">
-    <h3>⚠️ Desconectar do casal?</h3>
-    <p class="modal-desc">Você perderá acesso aos lugares, listas e eventos compartilhados. Esta ação não pode ser desfeita facilmente.</p>
-    <div class="modal-actions">
-      <button class="btn-modal-cancel" id="btn-cancel-desconectar">Cancelar</button>
-      <button class="btn-modal-danger" id="btn-confirm-desconectar">Desconectar</button>
+    <div class="modal-header">
+      <h3>Desconectar do casal?</h3>
+      <button class="modal-close" id="modal-desconectar-close" aria-label="Fechar">✕</button>
     </div>
+    <p class="modal-body-text">Você sairá do casal e precisará de um novo código para se reconectar. Os dados ficam salvos.</p>
+    <div class="modal-actions">
+      <button class="btn-danger-block" id="btn-confirmar-desconectar">Sim, desconectar</button>
+      <button class="btn-cancel" id="btn-cancelar-desconectar">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: alterar senha -->
+<div class="modal-overlay" id="modal-senha">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Alterar senha</h3>
+      <button class="modal-close" id="modal-senha-close" aria-label="Fechar">✕</button>
+    </div>
+    <form id="form-senha" autocomplete="off">
+      <div class="modal-field">
+        <label for="nova-senha">Nova senha</label>
+        <input type="password" id="nova-senha" placeholder="Mínimo 6 caracteres" minlength="6" required>
+      </div>
+      <div class="modal-field">
+        <label for="confirmar-senha">Confirmar senha</label>
+        <input type="password" id="confirmar-senha" placeholder="Repita a nova senha" required>
+      </div>
+      <p class="modal-error" id="senha-error"></p>
+      <div class="modal-actions">
+        <button type="submit" class="btn-primary-block">Salvar nova senha</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -137,8 +130,7 @@
 <script>
   if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./service-worker.js')
-        .catch((err) => console.warn('SW não registrado:', err));
+      navigator.serviceWorker.register('./service-worker.js').catch(() => {});
     });
   }
 </script>
