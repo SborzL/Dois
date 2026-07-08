@@ -13,28 +13,37 @@ async function init() {
     { onConflict: 'id', ignoreDuplicates: true }
   );
 
-  const { data: member } = await supabaseClient
-    .from('couple_members').select('couple_id').eq('user_id', currentUserId).maybeSingle();
-  if (member?.couple_id) { window.location.href = 'index.html'; return; }
+  // Se ja tem casal, redireciona
+  const jaConectado = await verificarSeTemCasal();
+  if (jaConectado) { window.location.href = 'index.html'; return; }
 
   setupTabs();
   setupCriarCodigo();
   setupEntrarCodigo();
 }
 
+async function verificarSeTemCasal() {
+  const { data: member } = await supabaseClient
+    .from('couple_members')
+    .select('couple_id')
+    .eq('user_id', currentUserId)
+    .maybeSingle();
+  return !!member?.couple_id;
+}
+
 function setupTabs() {
-  const tabCriar  = document.getElementById('tab-criar-codigo');
-  const tabTenho  = document.getElementById('tab-tenho-codigo');
+  const tabCriar    = document.getElementById('tab-criar-codigo');
+  const tabTenho    = document.getElementById('tab-tenho-codigo');
   const panelCriar  = document.getElementById('panel-criar');
   const panelEntrar = document.getElementById('panel-entrar');
 
   tabCriar.addEventListener('click', () => {
-    tabCriar.classList.add('active'); tabTenho.classList.remove('active');
+    tabCriar.classList.add('active');  tabTenho.classList.remove('active');
     tabCriar.setAttribute('aria-selected', 'true'); tabTenho.setAttribute('aria-selected', 'false');
     panelCriar.classList.remove('hidden'); panelEntrar.classList.add('hidden');
   });
   tabTenho.addEventListener('click', () => {
-    tabTenho.classList.add('active'); tabCriar.classList.remove('active');
+    tabTenho.classList.add('active');  tabCriar.classList.remove('active');
     tabTenho.setAttribute('aria-selected', 'true'); tabCriar.setAttribute('aria-selected', 'false');
     panelEntrar.classList.remove('hidden'); panelCriar.classList.add('hidden');
     stopPolling();
@@ -43,7 +52,7 @@ function setupTabs() {
 
 async function criarCodigoUnico() {
   const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
-  for (let tentativa = 0; tentativa < 5; tentativa++) {
+  for (let t = 0; t < 5; t++) {
     let code = '';
     for (let i = 0; i < 6; i++) code += chars.charAt(Math.floor(Math.random() * chars.length));
     const { data: couple, error } = await supabaseClient
@@ -51,7 +60,7 @@ async function criarCodigoUnico() {
     if (!error && couple) return couple;
     if (error && !error.message.includes('unique')) throw error;
   }
-  throw new Error('Nao foi possivel gerar um codigo unico. Tente novamente.');
+  throw new Error('Nao foi possivel gerar codigo unico. Tente novamente.');
 }
 
 async function limparCasalPendente() {
@@ -59,11 +68,10 @@ async function limparCasalPendente() {
   try {
     await supabaseClient.from('couple_members').delete()
       .eq('couple_id', myCoupleId).eq('user_id', currentUserId);
-    const { data: members } = await supabaseClient
+    const { data: rest } = await supabaseClient
       .from('couple_members').select('id').eq('couple_id', myCoupleId);
-    if (!members || members.length === 0) {
+    if (!rest || rest.length === 0)
       await supabaseClient.from('couples').delete().eq('id', myCoupleId);
-    }
   } catch (_) {}
   myCoupleId = null;
   stopPolling();
@@ -88,8 +96,7 @@ function setupCriarCodigo() {
       couple = await criarCodigoUnico();
     } catch (err) {
       showError(err.message || 'Erro ao criar codigo.');
-      btn.disabled = false;
-      btn.textContent = 'Gerar codigo';
+      btn.disabled = false; btn.textContent = 'Gerar codigo';
       return;
     }
 
@@ -99,8 +106,7 @@ function setupCriarCodigo() {
     if (memberError) {
       await supabaseClient.from('couples').delete().eq('id', couple.id);
       showError('Erro ao registrar: ' + memberError.message);
-      btn.disabled = false;
-      btn.textContent = 'Gerar codigo';
+      btn.disabled = false; btn.textContent = 'Gerar codigo';
       return;
     }
 
@@ -117,9 +123,7 @@ function setupCriarCodigo() {
           await navigator.clipboard.writeText(couple.invite_code);
           copyBtn.textContent = 'Copiado!';
           setTimeout(() => { copyBtn.textContent = 'Copiar'; }, 2000);
-        } catch {
-          copyBtn.textContent = couple.invite_code;
-        }
+        } catch { copyBtn.textContent = couple.invite_code; }
       };
     }
 
@@ -140,15 +144,20 @@ function startPolling(coupleId) {
       if (btn) { btn.disabled = false; btn.textContent = 'Gerar novo codigo'; }
       return;
     }
-    const { data: members, error } = await supabaseClient
-      .from('couple_members').select('user_id').eq('couple_id', coupleId);
-    if (error) return;
-    if (members && members.length >= 2) {
-      stopPolling();
-      isRedirecting = true;
-      window.location.href = 'index.html';
-    }
-  }, 3000);
+    try {
+      // Busca contagem de membros deste casal
+      const { data: members } = await supabaseClient
+        .from('couple_members')
+        .select('user_id')
+        .eq('couple_id', coupleId);
+
+      if (members && members.length >= 2) {
+        stopPolling();
+        isRedirecting = true;
+        window.location.href = 'index.html';
+      }
+    } catch (_) { /* ignora erros transitorios */ }
+  }, 2500);
 }
 
 function stopPolling() {
@@ -168,6 +177,11 @@ function setupEntrarCodigo() {
     errorEl.classList.remove('show');
   });
 
+  // Permite enviar com Enter
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') btn.click();
+  });
+
   btn.addEventListener('click', async () => {
     const code = input.value.trim().toUpperCase();
     errorEl.classList.remove('show');
@@ -181,36 +195,39 @@ function setupEntrarCodigo() {
     btn.disabled = true;
     btn.textContent = 'Conectando...';
 
+    // Busca casal pelo codigo
     const { data: couple, error: findError } = await supabaseClient
       .from('couples').select('id').eq('invite_code', code).maybeSingle();
 
     if (findError || !couple) {
       errorEl.textContent = 'Codigo invalido. Verifique e tente novamente.';
       errorEl.classList.add('show');
-      btn.disabled = false;
-      btn.textContent = 'Conectar';
+      btn.disabled = false; btn.textContent = 'Conectar';
       return;
     }
 
+    // Ja e membro?
     const { data: jaMembro } = await supabaseClient
       .from('couple_members').select('id')
       .eq('couple_id', couple.id).eq('user_id', currentUserId).maybeSingle();
     if (jaMembro) { window.location.href = 'index.html'; return; }
 
+    // Verifica limite de 2 membros
     const { data: existingMembers } = await supabaseClient
       .from('couple_members').select('id').eq('couple_id', couple.id);
     if (existingMembers && existingMembers.length >= 2) {
       errorEl.textContent = 'Este casal ja esta completo.';
       errorEl.classList.add('show');
-      btn.disabled = false;
-      btn.textContent = 'Conectar';
+      btn.disabled = false; btn.textContent = 'Conectar';
       return;
     }
 
+    // Insere o segundo membro
     const { error: memberError } = await supabaseClient
       .from('couple_members').insert({ couple_id: couple.id, user_id: currentUserId });
 
     if (memberError) {
+      // Race condition: outro insert concorrente
       if (memberError.code === '23505' || memberError.message.includes('unique')) {
         const { data: retry } = await supabaseClient
           .from('couple_members').select('id')
@@ -219,11 +236,11 @@ function setupEntrarCodigo() {
       }
       errorEl.textContent = 'Erro ao conectar: ' + memberError.message;
       errorEl.classList.add('show');
-      btn.disabled = false;
-      btn.textContent = 'Conectar';
+      btn.disabled = false; btn.textContent = 'Conectar';
       return;
     }
 
+    // Sucesso — redireciona imediatamente
     window.location.href = 'index.html';
   });
 }
