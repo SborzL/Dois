@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dois-v1';
+const CACHE_NAME = 'dois-v3';
 
 const STATIC_ASSETS = [
   './',
@@ -30,55 +30,61 @@ const STATIC_ASSETS = [
   './icons/icon-512.png'
 ];
 
-// Instala e faz cache dos assets estáticos
+// Instala e faz cache dos assets
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(STATIC_ASSETS);
-    })
+    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
   );
   self.skipWaiting();
 });
 
-// Limpa caches antigos ao ativar
+// Limpa TODOS os caches antigos ao ativar
 self.addEventListener('activate', (event) => {
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(
-        keys
-          .filter((key) => key !== CACHE_NAME)
-          .map((key) => caches.delete(key))
-      )
+      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
     )
   );
   self.clients.claim();
 });
 
-// Estratégia: Network First para requests ao Supabase, Cache First para assets estáticos
 self.addEventListener('fetch', (event) => {
   const url = new URL(event.request.url);
 
-  // Deixa requests ao Supabase passarem direto (sempre precisa de rede para dados)
-  if (url.hostname.includes('supabase.co')) {
-    return;
-  }
+  // Supabase: sempre direto pela rede
+  if (url.hostname.includes('supabase.co')) return;
 
-  // Para assets estáticos: tenta cache primeiro, depois rede
-  event.respondWith(
-    caches.match(event.request).then((cached) => {
-      if (cached) return cached;
+  const isNavigationOrScript =
+    event.request.mode === 'navigate' ||
+    url.pathname.endsWith('.js') ||
+    url.pathname.endsWith('.html');
 
-      return fetch(event.request).then((response) => {
-        // Só faz cache de respostas válidas
-        if (!response || response.status !== 200 || response.type === 'opaque') {
+  if (isNavigationOrScript) {
+    // Network First: busca na rede, atualiza cache, cai no cache só se offline
+    event.respondWith(
+      fetch(event.request)
+        .then((response) => {
+          if (response && response.status === 200) {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
           return response;
-        }
-        const responseClone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseClone);
+        })
+        .catch(() => caches.match(event.request))
+    );
+  } else {
+    // Cache First para CSS, imagens e fontes
+    event.respondWith(
+      caches.match(event.request).then((cached) => {
+        if (cached) return cached;
+        return fetch(event.request).then((response) => {
+          if (response && response.status === 200 && response.type !== 'opaque') {
+            const clone = response.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return response;
         });
-        return response;
-      });
-    })
-  );
+      })
+    );
+  }
 });
