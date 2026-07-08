@@ -1,242 +1,135 @@
-// ─── Auth guard ───────────────────────────────────────────────
 let currentUser = null;
-let coupleId    = null;
+let coupleId = null;
+let editingId = null;
+const categorias = ['Restaurante','Café','Cinema','Parque','Barzinho','Viagem','Outro'];
+const statusOpts = ['quero ir','agendado','já fomos'];
+const statusLabels = { 'quero ir': '📌 Quero ir', 'agendado': '🗓️ Agendado', 'já fomos': '✅ Já fomos' };
 
 async function init() {
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (!session) { window.location.href = 'login.html'; return; }
-
   currentUser = session.user;
-
-  // busca couple_id do usuário
-  const { data: member } = await supabaseClient
-    .from('couple_members')
-    .select('couple_id')
-    .eq('user_id', currentUser.id)
-    .single();
-
-  if (!member) { window.location.href = 'perfil.html'; return; }
-  coupleId = member.couple_id;
-
+  const { data: m } = await supabaseClient.from('couple_members').select('couple_id').eq('user_id', currentUser.id).single();
+  if (!m) { window.location.href = 'perfil.html'; return; }
+  coupleId = m.couple_id;
+  buildCategoryFilter();
   await loadPlaces();
-  setupFilters();
-  setupAddButton();
+  setupModal();
 }
 
-// ─── Carregar lugares ──────────────────────────────────────────
-const list        = document.getElementById('place-list');
-const countEl     = document.getElementById('places-count');
-const numQuero    = document.querySelector('.status-chip.quero-ir  .status-num');
-const numAgendado = document.querySelector('.status-chip.agendado  .status-num');
-const numFomos    = document.querySelector('.status-chip.fomos     .status-num');
-
-let allPlaces    = [];
-let activeFilter = 'todos';
-
-async function loadPlaces() {
-  list.innerHTML = '<li class="place-card loading"><span>Carregando...</span></li>';
-
-  const { data, error } = await supabaseClient
-    .from('places')
-    .select('*')
-    .eq('couple_id', coupleId)
-    .order('created_at', { ascending: false });
-
-  if (error) { console.error(error); return; }
-
-  allPlaces = data || [];
-  renderPlaces();
+function buildCategoryFilter() {
+  const wrap = document.getElementById('cat-filters');
+  if (!wrap) return;
+  wrap.innerHTML = `<button class="chip active" data-cat="">Todos</button>` +
+    categorias.map(c => `<button class="chip" data-cat="${c}">${c}</button>`).join('');
+  wrap.addEventListener('click', e => {
+    const btn = e.target.closest('.chip'); if (!btn) return;
+    wrap.querySelectorAll('.chip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    loadPlaces(btn.dataset.cat);
+  });
 }
 
-// ─── Render ────────────────────────────────────────────────────
-const categoryEmoji = {
-  restaurantes: '🍽️',
-  cafes:        '☕',
-  passeios:     '🌳',
-  outros:       '📍'
-};
+async function loadPlaces(cat = '') {
+  let q = supabaseClient.from('places').select('*').eq('couple_id', coupleId).order('created_at', { ascending: false });
+  if (cat) q = q.eq('category', cat);
+  const { data: places } = await q;
+  renderPlaces(places || []);
+}
 
-const statusLabel = {
-  'quero-ir':  'Quero ir',
-  'agendado':  'Agendado',
-  'fomos':     'Já fomos'
-};
-
-function renderPlaces() {
-  const filtered = activeFilter === 'todos'
-    ? allPlaces
-    : allPlaces.filter(p => p.category === activeFilter);
-
-  // atualiza contadores
-  const q = allPlaces.filter(p => p.status === 'quero-ir').length;
-  const a = allPlaces.filter(p => p.status === 'agendado').length;
-  const f = allPlaces.filter(p => p.status === 'fomos').length;
-  numQuero.textContent    = q;
-  numAgendado.textContent = a;
-  numFomos.textContent    = f;
-  countEl.textContent     = allPlaces.length + ' lugar' + (allPlaces.length !== 1 ? 'es' : '') + ' salvo' + (allPlaces.length !== 1 ? 's' : '');
-
-  if (filtered.length === 0) {
-    list.innerHTML = `
-      <li class="empty-state">
-        <p>Nenhum lugar aqui ainda.</p>
-        <p>Toque em + para adicionar!</p>
-      </li>`;
+function renderPlaces(places) {
+  const lista = document.getElementById('places-list');
+  if (!places.length) {
+    lista.innerHTML = `<div class="empty-state"><p class="empty-icon">📍</p><p>Nenhum lugar salvo ainda.</p><p class="empty-hint">Toque em + para adicionar o primeiro!</p></div>`;
     return;
   }
-
-  list.innerHTML = filtered.map(p => `
-    <li class="place-card" data-id="${p.id}" data-category="${p.category}" data-status="${p.status}">
-      <span class="place-emoji">${categoryEmoji[p.category] || '📍'}</span>
+  lista.innerHTML = places.map(p => `
+    <div class="place-card" data-id="${p.id}">
       <div class="place-info">
-        <div class="place-top">
-          <p class="place-name">${escHtml(p.name)}</p>
-          <span class="badge badge-${p.status}">${statusLabel[p.status] || p.status}</span>
+        <p class="place-name">${esc(p.name)}</p>
+        ${p.address ? `<p class="place-addr">${esc(p.address)}</p>` : ''}
+        <div class="place-meta">
+          ${p.category ? `<span class="chip-sm">${esc(p.category)}</span>` : ''}
+          <span class="status-badge status-${(p.status||'quero ir').replace(' ','-')}">${statusLabels[p.status] || p.status}</span>
         </div>
-        ${p.address ? `<p class="place-address">${escHtml(p.address)}</p>` : ''}
-        <p class="place-rating">${p.category.charAt(0).toUpperCase() + p.category.slice(1)}</p>
       </div>
-    </li>
-  `).join('');
+      <button class="btn-icon edit-btn" data-id="${p.id}" aria-label="Editar">✏️</button>
+    </div>`).join('');
 
-  // toque longo para deletar
-  list.querySelectorAll('.place-card').forEach(card => {
+  lista.querySelectorAll('.edit-btn').forEach(btn => {
+    btn.addEventListener('click', () => openEdit(btn.dataset.id, places));
+  });
+
+  lista.querySelectorAll('.place-card').forEach(card => {
     let timer;
-    card.addEventListener('touchstart', () => {
-      timer = setTimeout(() => openDeleteConfirm(card.dataset.id, card.querySelector('.place-name').textContent), 600);
-    });
+    card.addEventListener('touchstart', () => { timer = setTimeout(() => confirmDelete(card.dataset.id), 600); });
     card.addEventListener('touchend', () => clearTimeout(timer));
-    card.addEventListener('touchmove', () => clearTimeout(timer));
   });
 }
 
-// ─── Filtros ───────────────────────────────────────────────────
-function setupFilters() {
-  document.querySelectorAll('.filter').forEach(btn => {
-    btn.addEventListener('click', () => {
-      document.querySelectorAll('.filter').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      activeFilter = btn.dataset.filter;
-      renderPlaces();
-    });
+function openEdit(id, places) {
+  const p = places.find(x => x.id === id); if (!p) return;
+  editingId = id;
+  document.getElementById('modal-title-text').textContent = 'Editar lugar';
+  document.getElementById('place-name').value = p.name;
+  document.getElementById('place-address').value = p.address || '';
+  document.getElementById('place-category').value = p.category || '';
+  document.getElementById('place-status').value = p.status || 'quero ir';
+  document.getElementById('delete-btn').style.display = 'block';
+  openModal();
+}
+
+function setupModal() {
+  const modal = document.getElementById('place-modal');
+  const form = document.getElementById('place-form');
+  const catSel = document.getElementById('place-category');
+  const statusSel = document.getElementById('place-status');
+
+  catSel.innerHTML = `<option value="">Categoria</option>` + categorias.map(c => `<option value="${c}">${c}</option>`).join('');
+  statusSel.innerHTML = statusOpts.map(s => `<option value="${s}">${statusLabels[s]}</option>`).join('');
+
+  document.getElementById('add-place-btn').addEventListener('click', () => {
+    editingId = null;
+    document.getElementById('modal-title-text').textContent = 'Novo lugar';
+    form.reset();
+    document.getElementById('delete-btn').style.display = 'none';
+    openModal();
+  });
+
+  document.getElementById('modal-close').addEventListener('click', closeModal);
+  modal.addEventListener('click', e => { if (e.target === modal) closeModal(); });
+
+  document.getElementById('delete-btn').addEventListener('click', async () => {
+    if (!editingId) return;
+    await supabaseClient.from('places').delete().eq('id', editingId);
+    closeModal(); loadPlaces();
+  });
+
+  form.addEventListener('submit', async e => {
+    e.preventDefault();
+    const payload = {
+      couple_id: coupleId,
+      name: document.getElementById('place-name').value.trim(),
+      address: document.getElementById('place-address').value.trim(),
+      category: document.getElementById('place-category').value,
+      status: document.getElementById('place-status').value
+    };
+    if (editingId) {
+      await supabaseClient.from('places').update(payload).eq('id', editingId);
+    } else {
+      await supabaseClient.from('places').insert(payload);
+    }
+    closeModal(); loadPlaces();
   });
 }
 
-// ─── Modal: adicionar lugar ────────────────────────────────────
-function setupAddButton() {
-  document.getElementById('btn-add-place').addEventListener('click', openModal);
+function confirmDelete(id) {
+  if (!confirm('Remover este lugar?')) return;
+  supabaseClient.from('places').delete().eq('id', id).then(() => loadPlaces());
 }
 
-function openModal() {
-  // cria modal se não existir
-  if (!document.getElementById('place-modal')) buildModal();
-  document.getElementById('place-modal').classList.add('open');
-  document.getElementById('pm-name').focus();
-}
+function openModal() { document.getElementById('place-modal').classList.add('open'); }
+function closeModal() { document.getElementById('place-modal').classList.remove('open'); }
+function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-function closeModal() {
-  document.getElementById('place-modal').classList.remove('open');
-  document.getElementById('pm-form').reset();
-}
-
-function buildModal() {
-  const m = document.createElement('div');
-  m.id = 'place-modal';
-  m.className = 'modal-backdrop';
-  m.innerHTML = `
-    <div class="modal-sheet" role="dialog" aria-modal="true" aria-labelledby="pm-title">
-      <div class="modal-handle"></div>
-      <h2 id="pm-title">Novo lugar</h2>
-      <form id="pm-form" novalidate>
-        <label for="pm-name">Nome *</label>
-        <input id="pm-name" type="text" placeholder="Ex: Café Madeleine" required>
-
-        <label for="pm-address">Endereço</label>
-        <input id="pm-address" type="text" placeholder="Ex: Av. Paulista, 900">
-
-        <label for="pm-category">Categoria</label>
-        <select id="pm-category">
-          <option value="restaurantes">🍽️ Restaurante</option>
-          <option value="cafes">☕ Café</option>
-          <option value="passeios">🌳 Passeio</option>
-          <option value="outros">📍 Outros</option>
-        </select>
-
-        <label for="pm-status">Status</label>
-        <select id="pm-status">
-          <option value="quero-ir">Quero ir</option>
-          <option value="agendado">Agendado</option>
-          <option value="fomos">Já fomos</option>
-        </select>
-
-        <p id="pm-error" class="form-error hidden"></p>
-
-        <div class="modal-actions">
-          <button type="button" class="btn-secondary" id="pm-cancel">Cancelar</button>
-          <button type="submit" class="btn-primary" id="pm-save">Salvar</button>
-        </div>
-      </form>
-    </div>`;
-
-  document.body.appendChild(m);
-  m.addEventListener('click', e => { if (e.target === m) closeModal(); });
-  document.getElementById('pm-cancel').addEventListener('click', closeModal);
-  document.getElementById('pm-form').addEventListener('submit', submitPlace);
-}
-
-async function submitPlace(e) {
-  e.preventDefault();
-  const name    = document.getElementById('pm-name').value.trim();
-  const address = document.getElementById('pm-address').value.trim();
-  const category= document.getElementById('pm-category').value;
-  const status  = document.getElementById('pm-status').value;
-  const errEl   = document.getElementById('pm-error');
-  const saveBtn = document.getElementById('pm-save');
-
-  if (!name) { showError(errEl, 'O nome é obrigatório.'); return; }
-
-  saveBtn.disabled = true;
-  saveBtn.textContent = 'Salvando...';
-
-  const { error } = await supabaseClient.from('places').insert({
-    couple_id: coupleId,
-    name,
-    address: address || null,
-    category,
-    status,
-    created_by: currentUser.id
-  });
-
-  saveBtn.disabled = false;
-  saveBtn.textContent = 'Salvar';
-
-  if (error) { showError(errEl, 'Erro ao salvar. Tente novamente.'); return; }
-
-  closeModal();
-  await loadPlaces();
-}
-
-// ─── Deletar ───────────────────────────────────────────────────
-function openDeleteConfirm(id, name) {
-  if (!confirm(`Remover "${name}"?`)) return;
-  deletaPlace(id);
-}
-
-async function deletaPlace(id) {
-  await supabaseClient.from('places').delete().eq('id', id);
-  allPlaces = allPlaces.filter(p => p.id !== id);
-  renderPlaces();
-}
-
-// ─── Utils ─────────────────────────────────────────────────────
-function escHtml(str) {
-  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
-
-function showError(el, msg) {
-  el.textContent = msg;
-  el.classList.remove('hidden');
-}
-
-// ─── Start ─────────────────────────────────────────────────────
 init();
