@@ -29,7 +29,6 @@
       <button class="tab" id="tab-tenho-codigo" role="tab" aria-selected="false">Tenho um código</button>
     </div>
 
-    <!-- Painel: gerar código -->
     <div id="panel-criar">
       <div class="panel-card">
         <p class="panel-desc">Gere um código e envie para seu(sua) parceiro(a) usar na outra aba.</p>
@@ -42,7 +41,6 @@
       </div>
     </div>
 
-    <!-- Painel: usar código -->
     <div id="panel-entrar" class="hidden">
       <div class="panel-card">
         <p class="panel-desc">Digite o código gerado pelo(a) seu(sua) parceiro(a).</p>
@@ -57,5 +55,13 @@
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="supabase-client.js"></script>
 <script src="conectar.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js')
+        .catch((err) => console.warn('SW não registrado:', err));
+    });
+  }
+</script>
 </body>
 </html>
