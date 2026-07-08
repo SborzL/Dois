@@ -13,7 +13,6 @@ async function init() {
     { onConflict: 'id', ignoreDuplicates: true }
   );
 
-  // Se ja tem casal, redireciona
   const jaConectado = await verificarSeTemCasal();
   if (jaConectado) { window.location.href = 'index.html'; return; }
 
@@ -63,15 +62,31 @@ async function criarCodigoUnico() {
   throw new Error('Nao foi possivel gerar codigo unico. Tente novamente.');
 }
 
-async function limparCasalPendente() {
-  if (!myCoupleId) return;
+// Remove o usuario de TODOS os casais pendentes (sem 2 membros)
+async function limparCasaisAnteriores() {
   try {
-    await supabaseClient.from('couple_members').delete()
-      .eq('couple_id', myCoupleId).eq('user_id', currentUserId);
-    const { data: rest } = await supabaseClient
-      .from('couple_members').select('id').eq('couple_id', myCoupleId);
-    if (!rest || rest.length === 0)
-      await supabaseClient.from('couples').delete().eq('id', myCoupleId);
+    // Busca todos os vinculos do usuario
+    const { data: membros } = await supabaseClient
+      .from('couple_members')
+      .select('id, couple_id')
+      .eq('user_id', currentUserId);
+
+    if (!membros || membros.length === 0) return;
+
+    for (const m of membros) {
+      // Verifica se o casal ja tem 2 membros (casal completo = nao apaga)
+      const { data: todos } = await supabaseClient
+        .from('couple_members').select('id').eq('couple_id', m.couple_id);
+
+      if (todos && todos.length < 2) {
+        // Casal pendente: remove membro e o casal
+        await supabaseClient.from('couple_members').delete().eq('id', m.id);
+        await supabaseClient.from('couples').delete().eq('id', m.couple_id);
+      } else {
+        // Casal completo: apenas sai dele
+        await supabaseClient.from('couple_members').delete().eq('id', m.id);
+      }
+    }
   } catch (_) {}
   myCoupleId = null;
   stopPolling();
@@ -89,7 +104,8 @@ function setupCriarCodigo() {
     btn.textContent = 'Gerando...';
     showError('');
 
-    await limparCasalPendente();
+    // Limpa TODOS os casais anteriores antes de criar novo
+    await limparCasaisAnteriores();
 
     let couple;
     try {
@@ -145,7 +161,6 @@ function startPolling(coupleId) {
       return;
     }
     try {
-      // Busca contagem de membros deste casal
       const { data: members } = await supabaseClient
         .from('couple_members')
         .select('user_id')
@@ -156,7 +171,7 @@ function startPolling(coupleId) {
         isRedirecting = true;
         window.location.href = 'index.html';
       }
-    } catch (_) { /* ignora erros transitorios */ }
+    } catch (_) {}
   }, 2500);
 }
 
@@ -177,7 +192,6 @@ function setupEntrarCodigo() {
     errorEl.classList.remove('show');
   });
 
-  // Permite enviar com Enter
   input.addEventListener('keydown', (e) => {
     if (e.key === 'Enter') btn.click();
   });
@@ -195,7 +209,6 @@ function setupEntrarCodigo() {
     btn.disabled = true;
     btn.textContent = 'Conectando...';
 
-    // Busca casal pelo codigo
     const { data: couple, error: findError } = await supabaseClient
       .from('couples').select('id').eq('invite_code', code).maybeSingle();
 
@@ -206,13 +219,11 @@ function setupEntrarCodigo() {
       return;
     }
 
-    // Ja e membro?
     const { data: jaMembro } = await supabaseClient
       .from('couple_members').select('id')
       .eq('couple_id', couple.id).eq('user_id', currentUserId).maybeSingle();
     if (jaMembro) { window.location.href = 'index.html'; return; }
 
-    // Verifica limite de 2 membros
     const { data: existingMembers } = await supabaseClient
       .from('couple_members').select('id').eq('couple_id', couple.id);
     if (existingMembers && existingMembers.length >= 2) {
@@ -222,12 +233,10 @@ function setupEntrarCodigo() {
       return;
     }
 
-    // Insere o segundo membro
     const { error: memberError } = await supabaseClient
       .from('couple_members').insert({ couple_id: couple.id, user_id: currentUserId });
 
     if (memberError) {
-      // Race condition: outro insert concorrente
       if (memberError.code === '23505' || memberError.message.includes('unique')) {
         const { data: retry } = await supabaseClient
           .from('couple_members').select('id')
@@ -240,7 +249,6 @@ function setupEntrarCodigo() {
       return;
     }
 
-    // Sucesso — redireciona imediatamente
     window.location.href = 'index.html';
   });
 }
