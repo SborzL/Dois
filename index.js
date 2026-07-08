@@ -9,7 +9,8 @@ async function init() {
   const { data: member } = await supabaseClient
     .from('couple_members').select('couple_id').eq('user_id', currentUser.id).single();
 
-  if (!member) { window.location.href = 'perfil.html'; return; }
+  // Sem casal → vai para conectar, não para perfil
+  if (!member) { window.location.href = 'conectar.html'; return; }
   coupleId = member.couple_id;
 
   await Promise.all([loadHero(), loadNextEvent(), loadCounts()]);
