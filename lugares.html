@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="index.css">
 <link rel="stylesheet" href="lugares.css">
 <link rel="stylesheet" href="modal.css">
 <link rel="manifest" href="manifest.json">
@@ -24,12 +23,9 @@
       <h1>📍 Lugares</h1>
       <button class="fab-inline" id="add-place-btn" aria-label="Adicionar lugar">+</button>
     </div>
-
     <div class="filter-scroll" id="cat-filters"></div>
-
     <div id="places-list"></div>
   </main>
-
   <nav class="bottom-nav">
     <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span><span>Início</span></a>
     <a href="lugares.html" class="nav-item active"><span class="nav-icon">📍</span><span>Lugares</span></a>
@@ -38,8 +34,6 @@
     <a href="perfil.html" class="nav-item"><span class="nav-icon">👤</span><span>Perfil</span></a>
   </nav>
 </div>
-
-<!-- MODAL LUGAR -->
 <div class="modal-overlay" id="place-modal">
   <div class="modal-box">
     <div class="modal-header">
@@ -70,7 +64,6 @@
     </form>
   </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="supabase-client.js"></script>
 <script src="lugares.js"></script>

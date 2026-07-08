@@ -16,109 +16,53 @@
 <meta name="theme-color" content="#1f7a5c">
 </head>
 <body>
-
 <div class="phone">
   <main class="content">
+    <h1 class="page-title">👤 Perfil</h1>
 
-    <h1 class="page-title">Perfil</h1>
-
-    <section class="couple-card">
-      <div class="couple-avatars">
-        <span class="avatar avatar-1">👩</span>
-        <span class="avatar avatar-2">🧑</span>
-      </div>
-      <p class="couple-names">Ana &amp; Pedro</p>
-      <p class="couple-since">Juntos desde 12 de março de 2024</p>
-      <div class="couple-stats">
-        <div class="stat">
-          <span class="stat-num">2 anos</span>
+    <!-- Seção: tem casal -->
+    <section id="couple-section" style="display:none">
+      <div class="info-card">
+        <p class="info-label">Código do casal</p>
+        <div class="code-row">
+          <span id="invite-code-display" class="code-big">------</span>
+          <button class="btn-copy" id="copy-code-btn">Copiar</button>
         </div>
-        <span class="stat-dot">•</span>
-        <div class="stat">
-          <span class="stat-num">8 lugares</span>
-        </div>
+        <p class="info-sub" id="member-count"></p>
       </div>
     </section>
 
-    <section class="settings-block">
-      <p class="settings-label">Conta</p>
-      <ul class="settings-list">
-        <li class="settings-item" id="item-editar">
-          <span class="settings-icon">👤</span>
-          <div class="settings-info">
-            <p class="settings-title">Editar perfil</p>
-            <p class="settings-sub">Nome, foto, e-mail</p>
-          </div>
-          <span class="chevron-right">›</span>
-        </li>
-        <li class="settings-item" id="item-notificacoes">
-          <span class="settings-icon">🔔</span>
-          <div class="settings-info">
-            <p class="settings-title">Notificações</p>
-            <p class="settings-sub">Lembretes e alertas</p>
-          </div>
-          <span class="chevron-right">›</span>
-        </li>
-        <li class="settings-item" id="item-privacidade">
-          <span class="settings-icon">🔒</span>
-          <div class="settings-info">
-            <p class="settings-title">Privacidade</p>
-            <p class="settings-sub">Dados e segurança</p>
-          </div>
-          <span class="chevron-right">›</span>
-        </li>
-      </ul>
+    <!-- Seção: sem casal -->
+    <section id="no-couple-section" style="display:none">
+      <div class="info-card">
+        <p class="info-label">Você ainda não está conectado a um casal.</p>
+        <a href="conectar.html" class="btn-primary-block">Conectar agora →</a>
+      </div>
     </section>
 
+    <!-- Nome -->
     <section class="settings-block">
-      <p class="settings-label">Casal</p>
-      <ul class="settings-list">
-        <li class="settings-item" id="item-parceiro">
-          <span class="settings-icon">💚</span>
-          <div class="settings-info">
-            <p class="settings-title">Parceiro(a)</p>
-            <p class="settings-sub">Ana Silva · Conectada</p>
-          </div>
-          <span class="chevron-right">›</span>
-        </li>
-        <li class="settings-item" id="item-data">
-          <span class="settings-icon">📅</span>
-          <div class="settings-info">
-            <p class="settings-title">Data de início</p>
-            <p class="settings-sub">12 de março de 2024</p>
-          </div>
-          <span class="chevron-right">›</span>
-        </li>
-      </ul>
+      <p class="settings-label">Seu nome</p>
+      <div class="field-row">
+        <input type="text" id="profile-name" class="field-input" placeholder="Como quer ser chamado(a)?">
+        <button class="btn-save" id="save-profile-btn">Salvar</button>
+      </div>
+      <p class="field-sub" id="profile-email"></p>
     </section>
 
-    <button class="btn-logout" id="btn-logout">Sair da conta</button>
-
+    <button class="btn-logout" id="logout-btn">Sair da conta</button>
   </main>
 
   <nav class="bottom-nav">
-    <a href="index.html" class="nav-item">
-      <span class="nav-icon">🏠</span>
-      <span>Início</span>
-    </a>
-    <a href="lugares.html" class="nav-item">
-      <span class="nav-icon">📍</span>
-      <span>Lugares</span>
-    </a>
-    <a href="checklist.html" class="nav-item">
-      <span class="nav-icon">✅</span>
-      <span>Lista</span>
-    </a>
-    <a href="agenda.html" class="nav-item">
-      <span class="nav-icon">📅</span>
-      <span>Agenda</span>
-    </a>
-    <a href="perfil.html" class="nav-item active">
-      <span class="nav-icon">👤</span>
-      <span>Perfil</span>
-    </a>
+    <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span><span>Início</span></a>
+    <a href="lugares.html" class="nav-item"><span class="nav-icon">📍</span><span>Lugares</span></a>
+    <a href="checklist.html" class="nav-item"><span class="nav-icon">✅</span><span>Lista</span></a>
+    <a href="agenda.html" class="nav-item"><span class="nav-icon">📅</span><span>Agenda</span></a>
+    <a href="perfil.html" class="nav-item active"><span class="nav-icon">👤</span><span>Perfil</span></a>
   </nav>
 </div>
+
+<div id="toast" class="toast"></div>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="supabase-client.js"></script>

@@ -7,7 +7,6 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="index.css">
 <link rel="stylesheet" href="agenda.css">
 <link rel="stylesheet" href="modal.css">
 <link rel="manifest" href="manifest.json">
@@ -24,8 +23,6 @@
       <h1>📅 Agenda</h1>
       <button class="fab-inline" id="add-event-btn" aria-label="Adicionar evento">+</button>
     </div>
-
-    <!-- Calendário -->
     <div class="cal-card">
       <div class="cal-nav">
         <button class="cal-arrow" id="cal-prev" aria-label="Mês anterior">‹</button>
@@ -37,23 +34,18 @@
       </div>
       <div class="cal-grid" id="cal-grid"></div>
     </div>
-
-    <!-- Eventos do dia selecionado -->
     <div id="day-events" style="display:none">
       <div class="section-header">
         <h2 id="day-events-title"></h2>
       </div>
       <div id="day-events-list"></div>
     </div>
-
-    <!-- Próximos eventos -->
     <div class="section-header">
       <h2>Próximos eventos</h2>
       <span id="month-counter" class="counter-badge"></span>
     </div>
     <div id="upcoming-list"></div>
   </main>
-
   <nav class="bottom-nav">
     <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span><span>Início</span></a>
     <a href="lugares.html" class="nav-item"><span class="nav-icon">📍</span><span>Lugares</span></a>
@@ -62,8 +54,6 @@
     <a href="perfil.html" class="nav-item"><span class="nav-icon">👤</span><span>Perfil</span></a>
   </nav>
 </div>
-
-<!-- MODAL EVENTO -->
 <div class="modal-overlay" id="event-modal">
   <div class="modal-box">
     <div class="modal-header">
@@ -97,7 +87,6 @@
     </form>
   </div>
 </div>
-
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="supabase-client.js"></script>
 <script src="agenda.js"></script>
