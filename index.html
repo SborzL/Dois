@@ -21,9 +21,8 @@
   <main class="content">
 
     <section class="hero-card">
-      <p class="hero-date">Quarta-feira, 8 de julho</p>
-      <h1>Olá, Ana & Pedro <span>💚</span></h1>
-      <p class="hero-sub">Juntos há 2 anos, 4 meses e 12 dias</p>
+      <p class="hero-date" id="hero-date">Carregando...</p>
+      <h1 id="hero-greeting">💚</h1>
     </section>
 
     <section class="block">
@@ -31,16 +30,10 @@
         <h2>Próximo encontro</h2>
         <a href="agenda.html" class="link-sm">Ver agenda →</a>
       </div>
-      <div class="event-card">
-        <div class="event-date">
-          <span class="event-day">SÁB</span>
-          <span class="event-num">14</span>
+      <div id="next-event-block">
+        <div class="event-empty">
+          <p>Carregando...</p>
         </div>
-        <div class="event-info">
-          <p class="event-title">Jantar no Bossa</p>
-          <p class="event-sub">19h30 · Restaurante Bossa Nova</p>
-        </div>
-        <span class="event-icon">🍽️</span>
       </div>
     </section>
 
@@ -50,41 +43,24 @@
         <a href="lugares.html" class="quick-card">
           <span class="quick-icon">📍</span>
           <p class="quick-title">Lugares</p>
-          <p class="quick-sub">8 salvos</p>
+          <p class="quick-sub" id="count-lugares">&mdash;</p>
         </a>
         <a href="checklist.html" class="quick-card">
           <span class="quick-icon">✅</span>
           <p class="quick-title">Listas</p>
-          <p class="quick-sub">3 pendentes</p>
+          <p class="quick-sub" id="count-listas">&mdash;</p>
         </a>
         <a href="agenda.html" class="quick-card">
           <span class="quick-icon">📅</span>
           <p class="quick-title">Agenda</p>
-          <p class="quick-sub">2 eventos</p>
+          <p class="quick-sub" id="count-eventos">&mdash;</p>
         </a>
-        <a href="#" class="quick-card">
-          <span class="quick-icon">📷</span>
-          <p class="quick-title">Memórias</p>
-          <p class="quick-sub">12 fotos</p>
+        <a href="perfil.html" class="quick-card">
+          <span class="quick-icon">👤</span>
+          <p class="quick-title">Perfil</p>
+          <p class="quick-sub">Configurações</p>
         </a>
       </div>
-    </section>
-
-    <section class="block">
-      <div class="block-header">
-        <h2>Lista de hoje</h2>
-        <a href="checklist.html" class="link-sm">Ver tudo →</a>
-      </div>
-      <ul class="today-list" id="today-list">
-        <li class="today-item done">
-          <input type="checkbox" checked>
-          <span>Reservar mesa no restaurante</span>
-        </li>
-        <li class="today-item">
-          <input type="checkbox">
-          <span>Comprar flores para Ana</span>
-        </li>
-      </ul>
     </section>
 
   </main>
