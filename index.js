@@ -14,28 +14,16 @@ const DIAS  = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-f
 const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
 const SEM   = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
 
-// Roleta
-const ROLETA_COLORS = ['#1f7a5c','#2ecc71','#27ae60','#16a085','#1abc9c','#0e6655','#117a65','#148f77','#0b5345','#1d8348'];
-const CAT_EMOJI = { restaurante:'🍽️', bar:'🍻', cafe:'☕', parque:'🌳', praia:'🏖️', museu:'🏛️', cinema:'🎬', show:'🎵', viagem:'✈️', outro:'📍' };
-let roletaPlaces = [];
-let roletaSpinning = false;
-let roletaAngle = 0;
-
 let currentUser = null;
 let coupleId    = null;
 
-// Aguarda sessão — mesmo padrão do capsula.js e desejos.js
 async function waitForSession(maxWaitMs = 8000) {
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (session) return session;
   return new Promise((resolve) => {
     const timer = setTimeout(() => resolve(null), maxWaitMs);
     const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((event, session) => {
-      if (session) {
-        clearTimeout(timer);
-        subscription.unsubscribe();
-        resolve(session);
-      }
+      if (session) { clearTimeout(timer); subscription.unsubscribe(); resolve(session); }
     });
   });
 }
@@ -49,8 +37,8 @@ async function init() {
   coupleId = m.couple_id;
   await Promise.all([
     loadHero(), loadRecado(), loadNextEvents(),
-    loadWishesPreview(), loadRoleta(),
-    loadGoalsPreview(), loadLastPlace(), loadListsSummary(), loadCounts()
+    loadWishesPreview(), loadGoalsPreview(),
+    loadLastPlace(), loadListsSummary(), loadCounts()
   ]);
   setupRecado();
 }
@@ -126,15 +114,10 @@ function setupRecado() {
   });
 }
 
-// ── DESEJOS PREVIEW ──────────────────────────────────────────────
 async function loadWishesPreview() {
   const { data: wishes } = await supabaseClient
-    .from('lista_desejos')
-    .select('*')
-    .eq('couple_id', coupleId)
-    .eq('concluido', false)
-    .order('created_at', { ascending: false })
-    .limit(3);
+    .from('lista_desejos').select('*').eq('couple_id', coupleId)
+    .eq('concluido', false).order('created_at', { ascending: false }).limit(3);
   if (!wishes?.length) return;
   document.getElementById('wishes-section').style.display = '';
   const prioColor = { alta: '#e74c3c', media: '#f39c12', baixa: '#27ae60' };
@@ -151,98 +134,6 @@ async function loadWishesPreview() {
       <span class="wish-mini-prio" style="color:${prioColor[prio] || '#888'}">${prio}</span>
     </div>`;
   }).join('');
-}
-
-// ── ROLETA ───────────────────────────────────────────────────────
-async function loadRoleta() {
-  const { data: places, error } = await supabaseClient
-    .from('places')
-    .select('id, name, category')
-    .eq('couple_id', coupleId)
-    .eq('status', 'quero ir')
-    .order('created_at', { ascending: false })
-    .limit(12);
-  if (error) { console.error('Roleta erro:', error); return; }
-  if (!places?.length) return;
-  roletaPlaces = places.map(p => ({
-    ...p,
-    emoji: CAT_EMOJI[(p.category || '').toLowerCase()] || '📍'
-  }));
-  document.getElementById('roleta-section').style.display = '';
-  drawRoleta(roletaAngle);
-  document.getElementById('roleta-btn').addEventListener('click', spinRoleta);
-}
-
-function drawRoleta(startAngle) {
-  const canvas = document.getElementById('roleta-canvas');
-  if (!canvas) return;
-  const ctx    = canvas.getContext('2d');
-  const n      = roletaPlaces.length;
-  const cx     = canvas.width / 2;
-  const cy     = canvas.height / 2;
-  const r      = cx - 6;
-  const slice  = (2 * Math.PI) / n;
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  roletaPlaces.forEach((p, i) => {
-    const start = startAngle + i * slice;
-    const end   = start + slice;
-    ctx.beginPath();
-    ctx.moveTo(cx, cy);
-    ctx.arc(cx, cy, r, start, end);
-    ctx.closePath();
-    ctx.fillStyle = ROLETA_COLORS[i % ROLETA_COLORS.length];
-    ctx.fill();
-    ctx.strokeStyle = '#fff';
-    ctx.lineWidth = 2;
-    ctx.stroke();
-    ctx.save();
-    ctx.translate(cx, cy);
-    ctx.rotate(start + slice / 2);
-    ctx.textAlign = 'right';
-    ctx.fillStyle = '#fff';
-    ctx.font = 'bold 11px Work Sans, sans-serif';
-    const label = p.emoji + ' ' + truncate(p.name, 10);
-    ctx.fillText(label, r - 8, 4);
-    ctx.restore();
-  });
-  ctx.beginPath();
-  ctx.arc(cx, cy, 16, 0, 2 * Math.PI);
-  ctx.fillStyle = '#fff';
-  ctx.fill();
-  ctx.strokeStyle = '#ddd';
-  ctx.lineWidth = 2;
-  ctx.stroke();
-}
-
-function spinRoleta() {
-  if (roletaSpinning || !roletaPlaces.length) return;
-  roletaSpinning = true;
-  document.getElementById('roleta-btn').disabled = true;
-  document.getElementById('roleta-result').textContent = '';
-  const extra    = Math.random() * Math.PI * 2;
-  const spins    = (5 + Math.floor(Math.random() * 5)) * Math.PI * 2;
-  const total    = spins + extra;
-  const duration = 3500;
-  const start    = performance.now();
-  const from     = roletaAngle;
-  function step(now) {
-    const elapsed = now - start;
-    const t       = Math.min(elapsed / duration, 1);
-    const ease    = 1 - Math.pow(1 - t, 3);
-    roletaAngle   = from + total * ease;
-    drawRoleta(roletaAngle);
-    if (t < 1) { requestAnimationFrame(step); return; }
-    roletaSpinning = false;
-    document.getElementById('roleta-btn').disabled = false;
-    const n      = roletaPlaces.length;
-    const slice  = (2 * Math.PI) / n;
-    const pointer = -Math.PI / 2;
-    const norm   = ((pointer - roletaAngle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-    const winner = roletaPlaces[Math.floor(norm / slice) % n];
-    document.getElementById('roleta-result').textContent = `${winner.emoji} ${winner.name}!`;
-    showToast(`Que tal ir: ${winner.name}? 🎉`);
-  }
-  requestAnimationFrame(step);
 }
 
 async function loadGoalsPreview() {
@@ -267,7 +158,7 @@ async function loadNextEvents() {
     return;
   }
   bloco.innerHTML = evs.map(ev => {
-    const d    = new Date(ev.event_date + 'T12:00:00');
+    const d   = new Date(ev.event_date + 'T12:00:00');
     const hora = ev.event_time ? ev.event_time.slice(0,5).replace(':','h') : '';
     const sub  = [hora, ev.place].filter(Boolean).join(' · ');
     const isHoje = ev.event_date === hoje;
@@ -285,7 +176,7 @@ async function loadLastPlace() {
   const avg  = vals.length ? (vals.reduce((a,b) => a+b, 0) / vals.length).toFixed(1) : null;
   const stars   = avg ? `<span class="avg-star">⭐ ${avg}</span>` : '';
   const mapsBtn = p.maps_url ? `<a href="${esc(p.maps_url)}" target="_blank" rel="noopener" class="maps-mini">🗺️ Maps</a>` : '';
-  document.getElementById('last-place-block').innerHTML = `<div class="place-mini-card"><div class="place-mini-info"><p class="place-mini-name">${esc(p.name)}</p>${p.address ? `<p class="place-mini-addr">${esc(p.address)}</p>` : ''}<div class="place-mini-meta">${stars}${p.category ? `<span class="chip-xs">${esc(p.category)}</span>` : ''}${mapsBtn}</div></div></div>`;
+  document.getElementById('last-place-block').innerHTML = `<div class="place-mini-card"><div class="place-mini-info"><p class="place-mini-name">${esc(p.name)}</p>${p.address ? `<p class="place-mini-addr">${esc(p.address)}</p>` : ''}<div class="place-mini-meta">${stars}${p.category ? `<span class="chip-sm">${esc(p.category)}</span>` : ''}${mapsBtn}</div></div></div>`;
 }
 
 async function loadListsSummary() {
@@ -333,7 +224,6 @@ async function loadCounts() {
   document.getElementById('count-capsulas').textContent = `${ca||0} cápsula${ca!==1?'s':''}`;
 }
 
-function truncate(str, max) { return str.length > max ? str.slice(0, max) + '…' : str; }
 function diffDays(dateStr) {
   const start = new Date(String(dateStr).includes('T') ? dateStr : dateStr + 'T12:00:00');
   return Math.max(0, Math.floor((new Date() - start) / 86400000));

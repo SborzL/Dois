@@ -1,9 +1,12 @@
-const CACHE_NAME = 'dois-v10';
+const CACHE_NAME = 'dois-v11';
 const ASSETS = [
   '/Dois/',
   '/Dois/index.html',
   '/Dois/index.css',
   '/Dois/index.js',
+  '/Dois/roleta.html',
+  '/Dois/roleta.css',
+  '/Dois/roleta.js',
   '/Dois/agenda.html',
   '/Dois/agenda.css',
   '/Dois/agenda.js',

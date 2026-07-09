@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Dois - Roleta</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="roleta.css">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dois">
+<meta name="theme-color" content="#1f7a5c">
+</head>
+<body>
+<div class="phone">
+  <main class="content">
+
+    <div class="page-header">
+      <h1>🎉 Roleta de Lugares</h1>
+    </div>
+
+    <!-- Filtro de status -->
+    <div class="filter-row" id="status-filter">
+      <button class="chip active" data-status="quero ir">📌 Quero ir</button>
+      <button class="chip" data-status="agendado">🗓️ Agendado</button>
+      <button class="chip" data-status="todos">📍 Todos</button>
+    </div>
+
+    <!-- Roleta canvas -->
+    <div class="wheel-wrap" id="wheel-wrap">
+      <div class="wheel-container">
+        <canvas id="roleta-canvas" width="300" height="300"></canvas>
+        <div class="wheel-pointer">▼</div>
+      </div>
+      <button class="spin-btn" id="spin-btn">🎲 Girar!</button>
+      <div class="result-box" id="result-box"></div>
+    </div>
+
+    <!-- Estado vazio -->
+    <div class="empty-state hidden" id="empty-state">
+      <p class="empty-icon">📍</p>
+      <p>Nenhum lugar encontrado com esse filtro.</p>
+      <a href="lugares.html" class="link-sm">Adicionar lugares →</a>
+    </div>
+
+    <!-- Lista dos lugares sorteáveis -->
+    <div class="section-title" id="list-title">Na roleta agora</div>
+    <div class="places-chips" id="places-chips"></div>
+
+    <!-- Histórico de giros -->
+    <div class="section-title" id="history-title" style="display:none">Últimos sorteios</div>
+    <div class="history-list" id="history-list"></div>
+
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span><span>Início</span></a>
+    <a href="lugares.html" class="nav-item"><span class="nav-icon">📍</span><span>Lugares</span></a>
+    <a href="roleta.html" class="nav-item active"><span class="nav-icon">🎉</span><span>Roleta</span></a>
+    <a href="agenda.html" class="nav-item"><span class="nav-icon">📅</span><span>Agenda</span></a>
+    <a href="perfil.html" class="nav-item"><span class="nav-icon">👤</span><span>Perfil</span></a>
+  </nav>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase-client.js"></script>
+<script src="roleta.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
+    });
+  }
+</script>
+</body>
+</html>
