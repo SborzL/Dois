@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dois-v12';
+const CACHE_NAME = 'dois-v13';
 const ASSETS = [
   '/Dois/',
   '/Dois/index.html',
@@ -45,23 +45,39 @@ const ASSETS = [
   '/Dois/icons/icon-512.png'
 ];
 
+// Instala e faz cache inicial
 self.addEventListener('install', e => {
   e.waitUntil(
-    caches.open(CACHE_NAME).then(c => c.addAll(ASSETS)).then(() => self.skipWaiting())
+    caches.open(CACHE_NAME)
+      .then(c => c.addAll(ASSETS))
+      .then(() => self.skipWaiting())
   );
 });
 
+// Limpa caches antigos e assume controle imediatamente
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k)))
-    ).then(() => self.clients.claim())
+    caches.keys()
+      .then(keys => Promise.all(
+        keys.filter(k => k !== CACHE_NAME).map(k => caches.delete(k))
+      ))
+      .then(() => self.clients.claim())
   );
 });
 
+// Network-first: sempre tenta buscar do servidor.
+// Se offline, cai no cache como fallback.
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
+
   e.respondWith(
-    caches.match(e.request).then(cached => cached || fetch(e.request))
+    fetch(e.request)
+      .then(networkRes => {
+        // Atualiza o cache com a versao mais recente do servidor
+        const resClone = networkRes.clone();
+        caches.open(CACHE_NAME).then(c => c.put(e.request, resClone));
+        return networkRes;
+      })
+      .catch(() => caches.match(e.request))
   );
 });
