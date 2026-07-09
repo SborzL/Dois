@@ -15,6 +15,8 @@
   --nav-h:60px;
   --content-max:640px;
   --side-pad: clamp(1rem, 5vw, 2rem);
+  /* altura real da status bar no iPhone como web app */
+  --status-bar: env(safe-area-inset-top, 44px);
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -43,11 +45,13 @@ body{
   min-height:0;
 }
 
+/* ── SCROLL AREA ── */
 .content{
   flex:1;
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
-  padding-top:    calc(env(safe-area-inset-top,0px) + 1.25rem);
+  /* respira abaixo da status bar transparente */
+  padding-top:    calc(var(--status-bar) + 1rem);
   padding-bottom: calc(env(safe-area-inset-bottom,0px) + var(--nav-h) + 1.25rem);
   padding-left:   max(var(--side-pad), env(safe-area-inset-left,0px));
   padding-right:  max(var(--side-pad), env(safe-area-inset-right,0px));
@@ -207,7 +211,7 @@ body{
 .quick-title{font-size:.78rem;font-weight:700;}
 .quick-sub{font-size:.7rem;color:var(--color-text-muted);}
 
-/* ── BOTTOM NAV – sempre no fundo ── */
+/* ── BOTTOM NAV — sempre no fundo ── */
 .bottom-nav{
   position:fixed;
   bottom:0;
