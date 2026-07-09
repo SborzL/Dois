@@ -15,7 +15,6 @@
   --nav-h:60px;
   --content-max:640px;
   --side-pad: clamp(1rem, 5vw, 2rem);
-  /* altura real da status bar no iPhone como web app */
   --status-bar: env(safe-area-inset-top, 44px);
 }
 
@@ -50,7 +49,6 @@ body{
   flex:1;
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
-  /* respira abaixo da status bar transparente */
   padding-top:    calc(var(--status-bar) + 1rem);
   padding-bottom: calc(env(safe-area-inset-bottom,0px) + var(--nav-h) + 1.25rem);
   padding-left:   max(var(--side-pad), env(safe-area-inset-left,0px));
@@ -211,7 +209,7 @@ body{
 .quick-title{font-size:.78rem;font-weight:700;}
 .quick-sub{font-size:.7rem;color:var(--color-text-muted);}
 
-/* ── BOTTOM NAV — sempre no fundo ── */
+/* ── BOTTOM NAV ── */
 .bottom-nav{
   position:fixed;
   bottom:0;
@@ -254,3 +252,74 @@ body{
   white-space:nowrap;z-index:999;
 }
 .toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* ── DESEJOS PREVIEW ── */
+.wish-mini-row{
+  background:var(--color-surface);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-md);
+  padding:.75rem 1rem;
+  display:flex;
+  align-items:center;
+  gap:.75rem;
+}
+.wish-mini-emoji{font-size:1.3rem;flex-shrink:0;}
+.wish-mini-info{flex:1;min-width:0;display:flex;flex-direction:column;gap:.2rem;}
+.wish-mini-title{
+  font-size:.9rem;font-weight:600;
+  white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+}
+.wish-mini-prio{
+  font-size:.72rem;font-weight:700;
+  text-transform:capitalize;
+  margin-left:auto;
+  flex-shrink:0;
+}
+
+/* ── ROLETA ── */
+.roleta-wrap{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:.75rem;
+  padding:1rem;
+  background:var(--color-surface);
+  border:1px solid var(--color-border);
+  border-radius:var(--radius-lg);
+}
+#roleta-canvas{
+  border-radius:50%;
+  box-shadow:0 4px 16px rgba(31,122,92,.18);
+  max-width:260px;
+  width:100%;
+  height:auto;
+}
+.roleta-pointer{
+  font-size:1.6rem;
+  margin-top:-.5rem;
+  color:var(--color-primary);
+  line-height:1;
+  transform:rotate(180deg);
+}
+.roleta-btn{
+  background:var(--color-primary);
+  color:#fff;
+  border:none;
+  border-radius:var(--radius-full);
+  padding:.7rem 2rem;
+  font-size:.95rem;
+  font-weight:700;
+  font-family:var(--font-body);
+  cursor:pointer;
+  -webkit-tap-highlight-color:transparent;
+  transition:background .15s;
+}
+.roleta-btn:disabled{opacity:.6;cursor:not-allowed;}
+.roleta-btn:not(:disabled):active{background:var(--color-primary-dark);}
+.roleta-result{
+  font-size:1rem;
+  font-weight:700;
+  color:var(--color-primary);
+  min-height:1.4em;
+  text-align:center;
+}
