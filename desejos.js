@@ -15,8 +15,8 @@ const CAT_LABEL = {
 };
 const PRIO_EMOJI = { alta:'🔴', media:'🟡', baixa:'🟢' };
 
-// Aguarda sessão estar disponível antes de inicializar
-async function waitForSession(maxWaitMs = 3000) {
+// Aguarda sessao estar disponivel — timeout aumentado para 8s
+async function waitForSession(maxWaitMs = 8000) {
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (session) return session;
 
@@ -114,9 +114,10 @@ function renderLista() {
     const catLabel = CAT_LABEL[d.categoria] || 'Outro';
     const data = new Date(d.created_at).toLocaleDateString('pt-BR',{day:'2-digit',month:'short'});
     const checkIcon = d.concluido ? '✓' : '';
+    const idStr = String(d.id);
     return `
-      <div class="desejo-card ${d.concluido?'concluido':''} prio-${d.prioridade}" data-id="${d.id}">
-        <button class="desejo-check" data-check="${d.id}" aria-label="${d.concluido?'Marcar pendente':'Marcar realizado'}">${checkIcon}</button>
+      <div class="desejo-card ${d.concluido?'concluido':''} prio-${d.prioridade}" data-id="${idStr}">
+        <button class="desejo-check" data-check="${idStr}" aria-label="${d.concluido?'Marcar pendente':'Marcar realizado'}">${checkIcon}</button>
         <div class="desejo-info">
           <div class="desejo-top">
             <span class="desejo-cat">${cat} ${catLabel}</span>
@@ -141,9 +142,10 @@ function renderLista() {
 }
 
 function abrirVer(id) {
-  const d = desejos.find(x => x.id === id);
+  const idStr = String(id);
+  const d = desejos.find(x => String(x.id) === idStr);
   if (!d) return;
-  verDesejoId = id;
+  verDesejoId = idStr;
 
   const cat = CAT_EMOJI[d.categoria] || '💫';
   const catLabel = CAT_LABEL[d.categoria] || 'Outro';
@@ -171,13 +173,14 @@ function abrirVer(id) {
 }
 
 async function toggleConcluido(id) {
-  const d = desejos.find(x => x.id === id);
+  const idStr = String(id);
+  const d = desejos.find(x => String(x.id) === idStr);
   if (!d) return;
   const novoConcluido = !d.concluido;
   const { error } = await supabaseClient.from('lista_desejos').update({
     concluido: novoConcluido,
     concluido_em: novoConcluido ? new Date().toISOString() : null
-  }).eq('id', id);
+  }).eq('id', idStr);
   if (error) {
     console.error('Erro ao atualizar desejo:', error);
     toast('Erro ao atualizar. Tente novamente.');
