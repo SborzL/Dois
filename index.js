@@ -16,6 +16,7 @@ const SEM   = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
 
 // Roleta
 const ROLETA_COLORS = ['#1f7a5c','#2ecc71','#27ae60','#16a085','#1abc9c','#0e6655','#117a65','#148f77','#0b5345','#1d8348'];
+const CAT_EMOJI = { restaurante:'🍽️', bar:'🍻', cafe:'☕', parque:'🌳', praia:'🏖️', museu:'🏛️', cinema:'🎬', show:'🎵', viagem:'✈️', outro:'📍' };
 let roletaPlaces = [];
 let roletaSpinning = false;
 let roletaAngle = 0;
@@ -138,15 +139,20 @@ async function loadWishesPreview() {
 
 // ── ROLETA ───────────────────────────────────────────────────────
 async function loadRoleta() {
-  const { data: places } = await supabaseClient
+  const { data: places, error } = await supabaseClient
     .from('places')
-    .select('id, name, category, emoji')
+    .select('id, name, category')
     .eq('couple_id', coupleId)
     .eq('status', 'quero ir')
     .order('created_at', { ascending: false })
     .limit(12);
+  if (error) { console.error('Roleta erro:', error); return; }
   if (!places?.length) return;
-  roletaPlaces = places;
+  // Mapeia emoji pela categoria
+  roletaPlaces = places.map(p => ({
+    ...p,
+    emoji: CAT_EMOJI[(p.category || '').toLowerCase()] || '📍'
+  }));
   document.getElementById('roleta-section').style.display = '';
   drawRoleta(roletaAngle);
   document.getElementById('roleta-btn').addEventListener('click', spinRoleta);
@@ -181,7 +187,7 @@ function drawRoleta(startAngle) {
     ctx.textAlign = 'right';
     ctx.fillStyle = '#fff';
     ctx.font = 'bold 11px Work Sans, sans-serif';
-    const label = (p.emoji ? p.emoji + ' ' : '') + truncate(p.name, 10);
+    const label = p.emoji + ' ' + truncate(p.name, 10);
     ctx.fillText(label, r - 8, 4);
     ctx.restore();
   });
@@ -222,7 +228,7 @@ function spinRoleta() {
     const norm    = ((pointer - roletaAngle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
     const winner  = roletaPlaces[Math.floor(norm / slice) % n];
     document.getElementById('roleta-result').textContent =
-      `${winner.emoji || '📍'} ${winner.name}!`;
+      `${winner.emoji} ${winner.name}!`;
     showToast(`Que tal ir: ${winner.name}? 🎉`);
   }
   requestAnimationFrame(step);
