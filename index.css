@@ -27,58 +27,75 @@ body {
 
 /* ── Hero ───────────────────────────────────────────── */
 .hero-card {
-  background: linear-gradient(150deg, #1f7a5c 0%, #2d9e73 60%, #3dbf85 100%);
-  border-radius: 0 0 28px 28px;
-  padding: 20px 20px 24px;
+  background: linear-gradient(160deg, #14503c 0%, #1f7a5c 45%, #2aab78 100%);
+  border-radius: 0 0 32px 32px;
+  padding: 20px 20px 28px;
   padding-top: calc(20px + env(safe-area-inset-top));
   margin-bottom: 0;
+  position: relative;
+  overflow: hidden;
+}
+.hero-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(ellipse 70% 60% at 80% 20%, rgba(255,255,255,.07) 0%, transparent 70%);
+  pointer-events: none;
 }
 .hero-top {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 12px;
+  margin-bottom: 14px;
+  position: relative;
 }
 .hero-date {
   font-size: .78rem;
-  color: rgba(255,255,255,.70);
-  margin-bottom: 4px;
+  color: rgba(255,255,255,.65);
+  margin-bottom: 5px;
   text-transform: capitalize;
   font-weight: 500;
+  letter-spacing: .02em;
 }
 .hero-greeting {
-  font-size: 1.3rem;
+  font-size: 1.35rem;
   font-weight: 700;
   color: #fff;
+  text-shadow: 0 1px 3px rgba(0,0,0,.15);
 }
 .hero-days {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: rgba(255,255,255,.18);
-  border: 1.5px solid rgba(255,255,255,.30);
-  border-radius: 14px;
-  padding: 8px 14px;
-  min-width: 62px;
-  backdrop-filter: blur(4px);
+  background: rgba(255,255,255,.15);
+  border: 1.5px solid rgba(255,255,255,.25);
+  border-radius: 16px;
+  padding: 10px 16px;
+  min-width: 66px;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 .days-num {
-  font-size: 1.6rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: #fff;
   line-height: 1;
 }
 .days-label {
-  font-size: .65rem;
-  color: rgba(255,255,255,.75);
+  font-size: .63rem;
+  color: rgba(255,255,255,.80);
   text-align: center;
-  margin-top: 2px;
+  margin-top: 3px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: .04em;
 }
 .hero-frase {
-  font-size: .82rem;
-  color: rgba(255,255,255,.80);
+  font-size: .83rem;
+  color: rgba(255,255,255,.78);
   font-style: italic;
-  line-height: 1.5;
+  line-height: 1.55;
+  position: relative;
 }
 
 /* ── Roleta CTA ────────────────────────────────────── */

@@ -68,8 +68,8 @@ body {
   align-items: center;
   gap: 16px;
   padding: 8px 16px 20px;
-  background: linear-gradient(135deg, #e6f7ef 0%, #d0f0e0 100%);
-  border-radius: 0 0 24px 24px;
+  background: #fff;
+  border-bottom: 1.5px solid #f0f4f0;
   margin-bottom: 16px;
 }
 
@@ -81,7 +81,7 @@ body {
 
 #roleta-canvas {
   border-radius: 50%;
-  box-shadow: 0 4px 20px rgba(45,158,115,.20);
+  box-shadow: 0 4px 20px rgba(45,158,115,.15);
   display: block;
 }
 
@@ -107,12 +107,12 @@ body {
   font-weight: 700;
   font-family: inherit;
   cursor: pointer;
-  box-shadow: 0 4px 14px rgba(45,158,115,.30);
+  box-shadow: 0 4px 14px rgba(45,158,115,.25);
   transition: transform .1s, box-shadow .1s, background .15s;
   letter-spacing: .01em;
   -webkit-tap-highlight-color: transparent;
 }
-.spin-btn:active { transform: scale(.96); box-shadow: 0 2px 8px rgba(45,158,115,.20); }
+.spin-btn:active { transform: scale(.96); box-shadow: 0 2px 8px rgba(45,158,115,.15); }
 .spin-btn:hover { background: #249066; }
 .spin-btn:disabled { opacity: .5; cursor: not-allowed; }
 
