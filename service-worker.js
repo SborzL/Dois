@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dois-v11';
+const CACHE_NAME = 'dois-v12';
 const ASSETS = [
   '/Dois/',
   '/Dois/index.html',
