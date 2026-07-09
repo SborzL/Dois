@@ -5,8 +5,8 @@ let capsulas = [];
 let fotosBase64 = [];
 let editandoId = null;
 
-// Aguarda sessão estar disponível antes de inicializar
-async function waitForSession(maxWaitMs = 3000) {
+// Aguarda sessão estar disponível — timeout 8s (igual ao desejos.js)
+async function waitForSession(maxWaitMs = 8000) {
   const { data: { session } } = await supabaseClient.auth.getSession();
   if (session) return session;
 
@@ -105,7 +105,7 @@ function renderLista() {
       : '';
     const dataFmt = dataAbrir.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
     return `
-      <div class="capsula-card ${aberta?'aberta':'selada'}" data-id="${c.id}">
+      <div class="capsula-card ${aberta?'aberta':'selada'}" data-id="${String(c.id)}">
         <div class="capsula-top">
           <p class="capsula-titulo">${esc(c.titulo)}</p>
           <span class="capsula-status">${statusTxt}</span>
@@ -123,7 +123,8 @@ function renderLista() {
 }
 
 function abrirVer(id) {
-  const c = capsulas.find(x => x.id === id);
+  const idStr = String(id);
+  const c = capsulas.find(x => String(x.id) === idStr);
   if (!c) return;
 
   const hoje = new Date(); hoje.setHours(0,0,0,0);
@@ -133,7 +134,7 @@ function abrirVer(id) {
   const dataFmt = dataAbrir.toLocaleDateString('pt-BR',{day:'2-digit',month:'long',year:'numeric'});
 
   document.getElementById('ver-title').textContent = c.titulo;
-  editandoId = id;
+  editandoId = idStr;
 
   let body = '';
   if (aberta) {
