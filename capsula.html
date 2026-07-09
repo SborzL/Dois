@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Dois - Cápsula do Tempo</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="capsula.css">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Dois">
+<meta name="theme-color" content="#1f7a5c">
+</head>
+<body>
+<div class="phone">
+
+  <header class="top-bar">
+    <span class="page-title">⏳ Cápsula do Tempo</span>
+    <button class="btn-icon" id="btn-nova" aria-label="Nova cápsula">+</button>
+  </header>
+
+  <main class="content">
+    <div id="capsulas-list"></div>
+  </main>
+
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span><span>Início</span></a>
+    <a href="lugares.html" class="nav-item"><span class="nav-icon">📍</span><span>Lugares</span></a>
+    <a href="checklist.html" class="nav-item"><span class="nav-icon">✅</span><span>Lista</span></a>
+    <a href="agenda.html" class="nav-item"><span class="nav-icon">📅</span><span>Agenda</span></a>
+    <a href="perfil.html" class="nav-item"><span class="nav-icon">👤</span><span>Perfil</span></a>
+  </nav>
+</div>
+
+<!-- Modal nova cápsula -->
+<div class="modal-overlay" id="modal-nova" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modal-title">Nova Cápsula</h3>
+      <button class="modal-close" id="modal-fechar" aria-label="Fechar">✕</button>
+    </div>
+
+    <div class="modal-field">
+      <label for="inp-titulo">Título</label>
+      <input class="field-input" id="inp-titulo" type="text" placeholder="Ex: Nossa viagem dos sonhos ✈️" maxlength="80">
+    </div>
+
+    <div class="modal-field">
+      <label for="inp-mensagem">Mensagem para o futuro</label>
+      <textarea class="modal-textarea" id="inp-mensagem" rows="5" placeholder="Escreva para vocês do futuro..."></textarea>
+    </div>
+
+    <div class="modal-field">
+      <label for="inp-abrir">Abrir em</label>
+      <input class="field-input" id="inp-abrir" type="date">
+    </div>
+
+    <div class="modal-field">
+      <label>Fotos / Lembranças (opcional)</label>
+      <label class="upload-label" for="inp-fotos">
+        <span class="upload-icon">📎</span>
+        <span id="upload-txt">Toque para adicionar fotos</span>
+        <input type="file" id="inp-fotos" accept="image/*" multiple style="display:none">
+      </label>
+      <div id="fotos-preview" class="fotos-preview"></div>
+    </div>
+
+    <p class="modal-error" id="modal-erro"></p>
+
+    <div class="modal-actions">
+      <button class="btn-primary" id="btn-salvar">Selar Cápsula 🔒</button>
+      <button class="btn-cancel" id="btn-cancelar">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal ver cápsula aberta -->
+<div class="modal-overlay" id="modal-ver" role="dialog" aria-modal="true" aria-labelledby="ver-title">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="ver-title"></h3>
+      <button class="modal-close" id="ver-fechar" aria-label="Fechar">✕</button>
+    </div>
+    <div id="ver-body"></div>
+    <div class="modal-actions">
+      <button class="btn-xs danger" id="ver-deletar">Excluir cápsula</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase-client.js"></script>
+<script src="capsula.js"></script>
+<script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./service-worker.js').catch(()=>{});
+    });
+  }
+</script>
+</body>
+</html>
