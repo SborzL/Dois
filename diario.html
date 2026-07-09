@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Dois - Diário</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="diario.css">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1f7a5c">
+</head>
+<body>
+<div class="phone">
+  <header class="top-bar">
+    <h1 class="page-title">📓 Diário</h1>
+    <button class="btn-icon" id="btn-nova-entrada" aria-label="Nova entrada">+</button>
+  </header>
+  <main class="content" id="entries-list">
+    <div class="empty-state" id="empty-state">
+      <p class="empty-icon">📝</p>
+      <p class="empty-title">Nenhuma entrada ainda</p>
+      <p class="empty-sub">Escreva sobre os momentos que viveram juntos.</p>
+      <button class="btn-primary" id="btn-nova-entrada-2">Escrever agora</button>
+    </div>
+  </main>
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span><span>Início</span></a>
+    <a href="lugares.html" class="nav-item"><span class="nav-icon">📍</span><span>Lugares</span></a>
+    <a href="checklist.html" class="nav-item"><span class="nav-icon">✅</span><span>Lista</span></a>
+    <a href="agenda.html" class="nav-item"><span class="nav-icon">📅</span><span>Agenda</span></a>
+    <a href="perfil.html" class="nav-item"><span class="nav-icon">👤</span><span>Perfil</span></a>
+  </nav>
+</div>
+
+<!-- Modal nova entrada -->
+<div class="modal-overlay" id="modal-entrada">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modal-titulo">Nova entrada</h3>
+      <button class="modal-close" id="modal-close" aria-label="Fechar">✕</button>
+    </div>
+    <div class="mood-row" id="mood-row">
+      <span class="mood-label">Humor:</span>
+      <button class="mood-btn active" data-mood="😊">😊</button>
+      <button class="mood-btn" data-mood="🥰">🥰</button>
+      <button class="mood-btn" data-mood="😂">😂</button>
+      <button class="mood-btn" data-mood="😢">😢</button>
+      <button class="mood-btn" data-mood="🤩">🤩</button>
+      <button class="mood-btn" data-mood="😌">😌</button>
+    </div>
+    <textarea class="modal-textarea" id="entry-content" placeholder="O que aconteceu hoje?" rows="7"></textarea>
+    <p class="modal-error" id="entry-error"></p>
+    <div class="modal-actions">
+      <button class="btn-primary" id="save-entry-btn">Salvar</button>
+      <button class="btn-cancel" id="cancel-entry-btn">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase-client.js"></script>
+<script src="diario.js"></script>
+</body>
+</html>

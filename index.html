@@ -31,6 +31,22 @@
       <p class="hero-frase" id="hero-frase"></p>
     </section>
 
+    <!-- Recado do dia -->
+    <section class="block" id="recado-section">
+      <div class="block-header">
+        <h2>💌 Recado do dia</h2>
+        <button class="link-sm" id="btn-recado-toggle">Deixar recado</button>
+      </div>
+      <div id="recado-block"></div>
+      <div id="recado-form" style="display:none">
+        <textarea class="recado-input" id="recado-text" placeholder="Deixe um recado carinhoso para seu amor ver aqui..." rows="3"></textarea>
+        <div class="recado-form-actions">
+          <button class="btn-send" id="btn-recado-send">Enviar 💌</button>
+          <button class="btn-cancel-sm" id="btn-recado-cancel">Cancelar</button>
+        </div>
+      </div>
+    </section>
+
     <!-- Próximos eventos -->
     <section class="block">
       <div class="block-header">
@@ -38,6 +54,15 @@
         <a href="agenda.html" class="link-sm">Ver todos →</a>
       </div>
       <div id="next-events-block"></div>
+    </section>
+
+    <!-- Metas -->
+    <section class="block" id="goals-preview-section" style="display:none">
+      <div class="block-header">
+        <h2>🎯 Metas</h2>
+        <a href="metas.html" class="link-sm">Ver todas →</a>
+      </div>
+      <div id="goals-preview-block"></div>
     </section>
 
     <!-- Último lugar -->
@@ -62,26 +87,12 @@
     <section class="block">
       <h2>Acesso rápido</h2>
       <div class="quick-grid">
-        <a href="lugares.html" class="quick-card">
-          <span class="quick-icon">📍</span>
-          <p class="quick-title">Lugares</p>
-          <p class="quick-sub" id="count-lugares">&mdash;</p>
-        </a>
-        <a href="checklist.html" class="quick-card">
-          <span class="quick-icon">✅</span>
-          <p class="quick-title">Listas</p>
-          <p class="quick-sub" id="count-listas">&mdash;</p>
-        </a>
-        <a href="agenda.html" class="quick-card">
-          <span class="quick-icon">📅</span>
-          <p class="quick-title">Agenda</p>
-          <p class="quick-sub" id="count-eventos">&mdash;</p>
-        </a>
-        <a href="perfil.html" class="quick-card">
-          <span class="quick-icon">👤</span>
-          <p class="quick-title">Perfil</p>
-          <p class="quick-sub">Configurações</p>
-        </a>
+        <a href="lugares.html" class="quick-card"><span class="quick-icon">📍</span><p class="quick-title">Lugares</p><p class="quick-sub" id="count-lugares">&mdash;</p></a>
+        <a href="checklist.html" class="quick-card"><span class="quick-icon">✅</span><p class="quick-title">Listas</p><p class="quick-sub" id="count-listas">&mdash;</p></a>
+        <a href="agenda.html" class="quick-card"><span class="quick-icon">📅</span><p class="quick-title">Agenda</p><p class="quick-sub" id="count-eventos">&mdash;</p></a>
+        <a href="diario.html" class="quick-card"><span class="quick-icon">📓</span><p class="quick-title">Diário</p><p class="quick-sub" id="count-diario">&mdash;</p></a>
+        <a href="metas.html" class="quick-card"><span class="quick-icon">🎯</span><p class="quick-title">Metas</p><p class="quick-sub" id="count-metas">&mdash;</p></a>
+        <a href="perfil.html" class="quick-card"><span class="quick-icon">👤</span><p class="quick-title">Perfil</p><p class="quick-sub">Config</p></a>
       </div>
     </section>
 
@@ -96,6 +107,7 @@
   </nav>
 </div>
 
+<div id="toast" class="toast"></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <script src="supabase-client.js"></script>
 <script src="index.js"></script>

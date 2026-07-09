@@ -1,20 +1,20 @@
 const FRASES = [
-  '“O amor não é olhar um para o outro, é olhar juntos na mesma direção.”',
-  '“Você é a minha parte favorita de todos os meus dias.”',
-  '“Com você, até o cotidiano vira uma aventura.”',
-  '“Ser amado por você é a minha maior alegria.”',
-  '“Juntos somos mais do que a soma de nossas partes.”',
-  '“Você me faz querer ser uma versão melhor de mim.”',
-  '“Em cada momento, escolho você.”',
-  '“O lar não é um lugar, é uma pessoa — e essa pessoa é você.”',
-  '“Nosso amor é feito de pequenos momentos que duram para sempre.”',
-  '“Obrigado(a) por fazer do simples algo extraordinário.”',
+  '"O amor não é olhar um para o outro, é olhar juntos na mesma direção."',
+  '"Você é a minha parte favorita de todos os meus dias."',
+  '"Com você, até o cotidiano vira uma aventura."',
+  '"Ser amado por você é a minha maior alegria."',
+  '"Juntos somos mais do que a soma de nossas partes."',
+  '"Você me faz querer ser uma versão melhor de mim."',
+  '"Em cada momento, escolho você."',
+  '"O lar não é um lugar, é uma pessoa — e essa pessoa é você."',
+  '"Nosso amor é feito de pequenos momentos que duram para sempre."',
+  '"Obrigado(a) por fazer do simples algo extraordinário."',
 ];
-const DIAS = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
+const DIAS  = ['Domingo','Segunda-feira','Terça-feira','Quarta-feira','Quinta-feira','Sexta-feira','Sábado'];
 const MESES = ['janeiro','fevereiro','março','abril','maio','junho','julho','agosto','setembro','outubro','novembro','dezembro'];
-const SEM = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
+const SEM   = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
 let currentUser = null;
-let coupleId = null;
+let coupleId    = null;
 
 async function init() {
   const { data: { session } } = await supabaseClient.auth.getSession();
@@ -23,28 +23,23 @@ async function init() {
   const { data: m } = await supabaseClient.from('couple_members').select('couple_id').eq('user_id', currentUser.id).maybeSingle();
   if (!m?.couple_id) { window.location.href = 'conectar.html'; return; }
   coupleId = m.couple_id;
-  await Promise.all([loadHero(), loadNextEvents(), loadLastPlace(), loadListsSummary(), loadCounts()]);
+  await Promise.all([loadHero(), loadRecado(), loadNextEvents(), loadGoalsPreview(), loadLastPlace(), loadListsSummary(), loadCounts()]);
+  setupRecado();
 }
 
 async function loadHero() {
   const now = new Date();
   document.getElementById('hero-date').textContent = `${DIAS[now.getDay()]}, ${now.getDate()} de ${MESES[now.getMonth()]}`;
-
   const { data: prof } = await supabaseClient.from('profiles').select('name').eq('id', currentUser.id).maybeSingle();
   const nome = prof?.name?.split(' ')[0] || currentUser.email.split('@')[0];
   document.getElementById('hero-greeting').textContent = `Olá, ${nome} 💚`;
-
   const { data: couple } = await supabaseClient.from('couples').select('created_at, display_name, anniversary_date, custom_phrase').eq('id', coupleId).maybeSingle();
-
   const daysEl = document.getElementById('hero-days');
-  const since = couple?.anniversary_date || couple?.created_at;
+  const since  = couple?.anniversary_date || couple?.created_at;
   if (since) {
     const diff = diffDays(since);
     daysEl.innerHTML = `<span class="days-num">${diff}</span><span class="days-label">dias<br>juntos</span>`;
-  } else {
-    daysEl.style.display = 'none';
-  }
-
+  } else { daysEl.style.display = 'none'; }
   const phraseEl = document.getElementById('hero-frase');
   if (couple?.custom_phrase?.trim()) {
     phraseEl.textContent = couple.custom_phrase.trim();
@@ -52,24 +47,68 @@ async function loadHero() {
     const dayOfYear = Math.floor((now - new Date(now.getFullYear(), 0, 0)) / 86400000);
     phraseEl.textContent = FRASES[dayOfYear % FRASES.length];
   }
-
   if (couple?.display_name?.trim()) {
     document.getElementById('hero-greeting').textContent = `${couple.display_name.trim()} 💚`;
   }
+}
 
-  if (couple?.anniversary_date) {
-    const ann = new Date(couple.anniversary_date + 'T12:00:00');
-    const label = `Desde ${ann.getDate()} de ${MESES[ann.getMonth()]}`;
-    const existing = document.getElementById('hero-anniversary');
-    if (existing) existing.textContent = label;
-    else {
-      const p = document.createElement('p');
-      p.id = 'hero-anniversary';
-      p.className = 'hero-date';
-      p.textContent = label;
-      document.querySelector('.hero-top > div').appendChild(p);
-    }
+async function loadRecado() {
+  const hoje = new Date().toISOString().split('T')[0];
+  const { data: msgs } = await supabaseClient
+    .from('daily_messages')
+    .select('*, profiles(name)')
+    .eq('couple_id', coupleId)
+    .gte('created_at', hoje + 'T00:00:00Z')
+    .order('created_at', { ascending: false })
+    .limit(3);
+  const block = document.getElementById('recado-block');
+  if (!msgs?.length) {
+    block.innerHTML = '<p class="recado-empty">Nenhum recado hoje. Seja o primeiro! 💌</p>';
+    return;
   }
+  block.innerHTML = msgs.map(m => {
+    const isMe = m.author_id === currentUser.id;
+    const nome = m.profiles?.name || (isMe ? 'Você' : 'Parceiro(a)');
+    const hora = new Date(m.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+    return `<div class="recado-card ${isMe ? 'mine' : 'theirs'}">
+      <p class="recado-text">${esc(m.content)}</p>
+      <p class="recado-meta">${esc(nome)} · ${hora}</p>
+    </div>`;
+  }).join('');
+}
+
+function setupRecado() {
+  const toggle  = document.getElementById('btn-recado-toggle');
+  const form    = document.getElementById('recado-form');
+  const sendBtn = document.getElementById('btn-recado-send');
+  const cancel  = document.getElementById('btn-recado-cancel');
+  toggle.addEventListener('click', () => { form.style.display = form.style.display === 'none' ? 'flex' : 'none'; });
+  cancel.addEventListener('click', () => { form.style.display = 'none'; document.getElementById('recado-text').value = ''; });
+  sendBtn.addEventListener('click', async () => {
+    const content = document.getElementById('recado-text').value.trim();
+    if (!content) return;
+    sendBtn.disabled = true; sendBtn.textContent = 'Enviando...';
+    const { error } = await supabaseClient.from('daily_messages').insert({ couple_id: coupleId, author_id: currentUser.id, content });
+    sendBtn.disabled = false; sendBtn.textContent = 'Enviar 💌';
+    if (error) { showToast('Erro: ' + error.message); return; }
+    document.getElementById('recado-text').value = '';
+    form.style.display = 'none';
+    showToast('Recado enviado! 💌');
+    await loadRecado();
+  });
+}
+
+async function loadGoalsPreview() {
+  const { data: goals } = await supabaseClient.from('goals').select('*').eq('couple_id', coupleId).eq('done', false).order('created_at', { ascending: false }).limit(2);
+  if (!goals?.length) return;
+  document.getElementById('goals-preview-section').style.display = '';
+  document.getElementById('goals-preview-block').innerHTML = goals.map(g => {
+    const pct = g.target > 0 ? Math.min(100, Math.round((g.current / g.target) * 100)) : 0;
+    return `<div class="goal-mini">
+      <div class="goal-mini-top"><span>${g.emoji || '🎯'}</span><span class="goal-mini-title">${esc(g.title)}</span><span class="goal-mini-pct">${g.target > 0 ? pct + '%' : ''}</span></div>
+      ${g.target > 0 ? `<div class="goal-mini-bar"><div class="goal-mini-fill" style="width:${pct}%"></div></div>` : ''}
+    </div>`;
+  }).join('');
 }
 
 async function loadNextEvents() {
@@ -81,9 +120,9 @@ async function loadNextEvents() {
     return;
   }
   bloco.innerHTML = evs.map(ev => {
-    const d = new Date(ev.event_date + 'T12:00:00');
+    const d   = new Date(ev.event_date + 'T12:00:00');
     const hora = ev.event_time ? ev.event_time.slice(0,5).replace(':','h') : '';
-    const sub = [hora, ev.place].filter(Boolean).join(' · ');
+    const sub  = [hora, ev.place].filter(Boolean).join(' · ');
     const isHoje = ev.event_date === hoje;
     return `<div class="event-card ${isHoje ? 'event-today' : ''}"><div class="event-date"><span class="event-day">${SEM[d.getDay()]}</span><span class="event-num">${d.getDate()}</span></div><div class="event-info"><p class="event-title">${esc(ev.title)}</p>${sub ? `<p class="event-sub">${esc(sub)}</p>` : ''}</div>${isHoje ? '<span class="hoje-badge">Hoje</span>' : ''}</div>`;
   }).join('');
@@ -96,8 +135,8 @@ async function loadLastPlace() {
   document.getElementById('last-place-section').style.display = '';
   const RATING_FIELDS = ['rating_ambiente','rating_comida','rating_atendimento','rating_custo'];
   const vals = RATING_FIELDS.map(k => p[k]).filter(v => v > 0);
-  const avg = vals.length ? (vals.reduce((a,b)=>a+b,0)/vals.length).toFixed(1) : null;
-  const stars = avg ? `<span class="avg-star">⭐ ${avg}</span>` : '';
+  const avg  = vals.length ? (vals.reduce((a,b) => a+b, 0) / vals.length).toFixed(1) : null;
+  const stars   = avg ? `<span class="avg-star">⭐ ${avg}</span>` : '';
   const mapsBtn = p.maps_url ? `<a href="${esc(p.maps_url)}" target="_blank" rel="noopener" class="maps-mini">🗺️ Maps</a>` : '';
   document.getElementById('last-place-block').innerHTML = `<div class="place-mini-card"><div class="place-mini-info"><p class="place-mini-name">${esc(p.name)}</p>${p.address ? `<p class="place-mini-addr">${esc(p.address)}</p>` : ''}<div class="place-mini-meta">${stars}${p.category ? `<span class="chip-xs">${esc(p.category)}</span>` : ''}${mapsBtn}</div></div></div>`;
 }
@@ -118,7 +157,7 @@ async function loadListsSummary() {
   document.getElementById('lists-block').innerHTML = lists.map(l => {
     const c = countMap[l.id] || { total: 0, done: 0 };
     if (!c.total) return '';
-    const pct = Math.round((c.done / c.total) * 100);
+    const pct   = Math.round((c.done / c.total) * 100);
     const emoji = l.emoji || '📋';
     return `<div class="list-mini-row"><span class="list-mini-emoji">${emoji}</span><div class="list-mini-info"><div class="list-mini-top"><span class="list-mini-name">${esc(l.title)}</span><span class="list-mini-count">${c.done}/${c.total}</span></div><div class="list-mini-track"><div class="list-mini-fill" style="width:${pct}%"></div></div></div></div>`;
   }).filter(Boolean).join('');
@@ -126,14 +165,18 @@ async function loadListsSummary() {
 
 async function loadCounts() {
   const hoje = new Date().toISOString().split('T')[0];
-  const [{ count: pl }, { count: li }, { count: ev }] = await Promise.all([
+  const [{ count: pl }, { count: li }, { count: ev }, { count: di }, { count: go }] = await Promise.all([
     supabaseClient.from('places').select('*', { count: 'exact', head: true }).eq('couple_id', coupleId),
     supabaseClient.from('checklists').select('*', { count: 'exact', head: true }).eq('couple_id', coupleId),
     supabaseClient.from('events').select('*', { count: 'exact', head: true }).eq('couple_id', coupleId).gte('event_date', hoje),
+    supabaseClient.from('diary_entries').select('*', { count: 'exact', head: true }).eq('couple_id', coupleId),
+    supabaseClient.from('goals').select('*', { count: 'exact', head: true }).eq('couple_id', coupleId).eq('done', false),
   ]);
   document.getElementById('count-lugares').textContent = `${pl||0} salvo${pl!==1?'s':''}`;
   document.getElementById('count-listas').textContent  = `${li||0} lista${li!==1?'s':''}`;
   document.getElementById('count-eventos').textContent = `${ev||0} futuro${ev!==1?'s':''}`;
+  document.getElementById('count-diario').textContent  = `${di||0} entrada${di!==1?'s':''}`;
+  document.getElementById('count-metas').textContent   = `${go||0} ativa${go!==1?'s':''}`;
 }
 
 function diffDays(dateStr) {
@@ -141,4 +184,5 @@ function diffDays(dateStr) {
   return Math.max(0, Math.floor((new Date() - start) / 86400000));
 }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+function showToast(msg) { const t = document.getElementById('toast'); if (!t) return; t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
 init();

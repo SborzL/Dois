@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Dois - Metas</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="metas.css">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icons/icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1f7a5c">
+</head>
+<body>
+<div class="phone">
+  <header class="top-bar">
+    <h1 class="page-title">🎯 Metas juntos</h1>
+    <button class="btn-icon" id="btn-nova-meta" aria-label="Nova meta">+</button>
+  </header>
+  <main class="content">
+    <div class="tabs-row">
+      <button class="tab active" data-tab="ativas">Em andamento</button>
+      <button class="tab" data-tab="concluidas">Concluídas</button>
+    </div>
+    <div id="goals-list"></div>
+    <div class="empty-state" id="empty-state" style="display:none">
+      <p class="empty-icon">🎯</p>
+      <p class="empty-title">Nenhuma meta ainda</p>
+      <p class="empty-sub">Criem objetivos juntos e acompanhem o progresso.</p>
+      <button class="btn-primary" id="btn-nova-meta-2">Criar meta</button>
+    </div>
+  </main>
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span><span>Início</span></a>
+    <a href="lugares.html" class="nav-item"><span class="nav-icon">📍</span><span>Lugares</span></a>
+    <a href="checklist.html" class="nav-item"><span class="nav-icon">✅</span><span>Lista</span></a>
+    <a href="agenda.html" class="nav-item"><span class="nav-icon">📅</span><span>Agenda</span></a>
+    <a href="perfil.html" class="nav-item"><span class="nav-icon">👤</span><span>Perfil</span></a>
+  </nav>
+</div>
+
+<div class="modal-overlay" id="modal-meta">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modal-titulo">Nova meta</h3>
+      <button class="modal-close" id="modal-close" aria-label="Fechar">✕</button>
+    </div>
+    <div class="modal-field">
+      <label>Título</label>
+      <input type="text" id="meta-title" class="field-input" placeholder="Ex: Viajar para o nordeste">
+    </div>
+    <div class="modal-row">
+      <div class="modal-field half">
+        <label>Emoji</label>
+        <input type="text" id="meta-emoji" class="field-input" placeholder="🌴" maxlength="2">
+      </div>
+      <div class="modal-field half">
+        <label>Unidade</label>
+        <input type="text" id="meta-unit" class="field-input" placeholder="Ex: R$, km, vezes">
+      </div>
+    </div>
+    <div class="modal-row">
+      <div class="modal-field half">
+        <label>Meta total</label>
+        <input type="number" id="meta-target" class="field-input" placeholder="Ex: 3000" min="1">
+      </div>
+      <div class="modal-field half">
+        <label>Progresso atual</label>
+        <input type="number" id="meta-current" class="field-input" placeholder="0" min="0">
+      </div>
+    </div>
+    <p class="modal-error" id="meta-error"></p>
+    <div class="modal-actions">
+      <button class="btn-primary" id="save-meta-btn">Salvar</button>
+      <button class="btn-cancel" id="cancel-meta-btn">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-progresso">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3>Atualizar progresso</h3>
+      <button class="modal-close" id="prog-close" aria-label="Fechar">✕</button>
+    </div>
+    <p class="prog-title" id="prog-goal-title"></p>
+    <div class="modal-field">
+      <label>Valor atual</label>
+      <input type="number" id="prog-value" class="field-input" min="0">
+    </div>
+    <p class="modal-error" id="prog-error"></p>
+    <div class="modal-actions">
+      <button class="btn-primary" id="save-prog-btn">Atualizar</button>
+      <button class="btn-cancel" id="cancel-prog-btn">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase-client.js"></script>
+<script src="metas.js"></script>
+</body>
+</html>
