@@ -1,4 +1,4 @@
-const CACHE_NAME = 'dois-v6';
+const CACHE_NAME = 'dois-v7';
 const ASSETS = [
   '/Dois/',
   '/Dois/index.html',
@@ -25,6 +25,9 @@ const ASSETS = [
   '/Dois/capsula.html',
   '/Dois/capsula.css',
   '/Dois/capsula.js',
+  '/Dois/desejos.html',
+  '/Dois/desejos.css',
+  '/Dois/desejos.js',
   '/Dois/conectar.html',
   '/Dois/conectar.css',
   '/Dois/conectar.js',
