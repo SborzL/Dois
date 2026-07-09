@@ -25,7 +25,24 @@
       <h1>📍 Lugares</h1>
       <button class="fab-inline" id="add-place-btn" aria-label="Adicionar lugar">+</button>
     </div>
+
+    <!-- Barra de pesquisa -->
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="search" id="places-search" class="search-input" placeholder="Buscar lugar..." autocomplete="off">
+    </div>
+
+    <!-- Filtro de status -->
+    <div class="chip-row status-filters" id="status-filters">
+      <button class="chip active" data-status="">Todos</button>
+      <button class="chip" data-status="quero ir">📌 Quero ir</button>
+      <button class="chip" data-status="agendado">🗓️ Agendado</button>
+      <button class="chip" data-status="já fomos">✅ Já fomos</button>
+    </div>
+
+    <!-- Filtro de categoria -->
     <div class="chip-row" id="cat-filters"></div>
+
     <div id="places-list"></div>
   </main>
 

@@ -3,8 +3,16 @@ let coupleId = null;
 let editingId = null;
 let detailId = null;
 let allPlaces = [];
+let activeStatus = '';
+let activeCat = '';
+let searchQuery = '';
 
-const categorias = ['Restaurante','Café','Cinema','Parque','Barzinho','Viagem','Outro'];
+const categorias = [
+  'Restaurante','Café','Cinema','Parque','Barzinho','Viagem',
+  'Praia','Museu','Show / Evento','Doces & Sobremesas',
+  'Lanchonete','Pizzaria','Sushi','Churrascaria',
+  'Sorveteria','Padaria','Mercado','Shopping','Spa / Bem-estar','Outro'
+];
 const statusOpts = ['quero ir','agendado','já fomos'];
 const statusLabels = { 'quero ir': '📌 Quero ir', 'agendado': '🗓️ Agendado', 'já fomos': '✅ Já fomos' };
 const statusColors = { 'quero ir': 'status-quero', 'agendado': 'status-agendado', 'já fomos': 'status-fomos' };
@@ -15,22 +23,35 @@ const RATING_FIELDS = [
   { key: 'rating_custo',        label: '💰 Custo-benefício' },
 ];
 
-// ── INIT ────────────────────────────────────────────────────────────
-async function init() {
+// ── INIT ──────────────────────────────────────────────────────────────
+async function waitForSession(ms = 8000) {
   const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session) return session;
+  return new Promise(resolve => {
+    const timer = setTimeout(() => resolve(null), ms);
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((_, s) => {
+      if (s) { clearTimeout(timer); subscription.unsubscribe(); resolve(s); }
+    });
+  });
+}
+
+async function init() {
+  const session = await waitForSession();
   if (!session) { window.location.href = 'login.html'; return; }
   currentUser = session.user;
   const { data: m } = await supabaseClient.from('couple_members').select('couple_id').eq('user_id', currentUser.id).maybeSingle();
   if (!m?.couple_id) { window.location.href = 'conectar.html'; return; }
   coupleId = m.couple_id;
   buildCategoryFilter();
+  setupStatusFilter();
+  setupSearch();
   await loadPlaces();
   setupModal();
   document.getElementById('back-btn').addEventListener('click', showListScreen);
   document.getElementById('detail-edit-btn').addEventListener('click', () => openEdit(detailId));
 }
 
-// ── TELAS ────────────────────────────────────────────────────────────
+// ── TELAS ──────────────────────────────────────────────────────────────
 function showListScreen() {
   document.getElementById('screen-list').classList.remove('hidden');
   document.getElementById('screen-detail').classList.add('hidden');
@@ -44,92 +65,67 @@ function showDetailScreen(id) {
   renderDetail(p);
 }
 
-// ── DETALHE ──────────────────────────────────────────────────────────
-function renderDetail(p) {
-  document.getElementById('detail-name').textContent = p.name;
-  const catBadge = document.getElementById('detail-category-badge');
-  catBadge.textContent = p.category || '';
-  catBadge.className = p.category ? 'chip-sm' : '';
-
-  // calcula media
-  const vals = RATING_FIELDS.map(f => p[f.key]).filter(v => v != null && v > 0);
-  const avg = vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length) : null;
-
-  let html = '';
-
-  // status + média
-  html += `<div class="detail-top">`;
-  html += `<span class="status-badge ${statusColors[p.status] || 'status-quero'}">${statusLabels[p.status] || p.status}</span>`;
-  if (avg !== null) html += `<span class="avg-badge">⭐ ${avg.toFixed(1)}</span>`;
-  html += `</div>`;
-
-  // endereço + maps
-  if (p.address || p.maps_url) {
-    html += `<div class="detail-section">`;
-    if (p.address) html += `<div class="detail-addr">📍 ${esc(p.address)}</div>`;
-    if (p.maps_url) html += `<a href="${esc(p.maps_url)}" target="_blank" rel="noopener" class="maps-btn">🗺️ Abrir no Google Maps</a>`;
-    html += `</div>`;
-  }
-
-  // avaliações por categoria
-  const hasAny = RATING_FIELDS.some(f => p[f.key] > 0);
-  if (hasAny) {
-    html += `<div class="detail-section">`;
-    html += `<div class="detail-section-title">Avaliações</div>`;
-    html += `<div class="detail-ratings">`;
-    RATING_FIELDS.forEach(f => {
-      const val = p[f.key] || 0;
-      if (!val) return;
-      html += `<div class="detail-rating-row">
-        <span class="detail-rating-label">${f.label}</span>
-        <span class="detail-stars">${starsHtml(val)}</span>
-      </div>`;
-    });
-    html += `</div></div>`;
-  }
-
-  // observações
-  if (p.notes) {
-    html += `<div class="detail-section">`;
-    html += `<div class="detail-section-title">Observações</div>`;
-    html += `<div class="detail-notes">${esc(p.notes).replace(/\n/g, '<br>')}</div>`;
-    html += `</div>`;
-  }
-
-  document.getElementById('detail-body').innerHTML = html;
+// ── FILTROS ────────────────────────────────────────────────────────────
+function applyFilters() {
+  let list = allPlaces;
+  if (activeStatus) list = list.filter(p => p.status === activeStatus);
+  if (activeCat)    list = list.filter(p => p.category === activeCat);
+  if (searchQuery)  list = list.filter(p =>
+    p.name.toLowerCase().includes(searchQuery) ||
+    (p.address || '').toLowerCase().includes(searchQuery) ||
+    (p.category || '').toLowerCase().includes(searchQuery)
+  );
+  renderPlaces(list);
 }
 
-function starsHtml(val) {
-  let s = '';
-  for (let i = 1; i <= 5; i++) s += `<span class="star-d ${i <= val ? 'on' : ''}">★</span>`;
-  return s;
+function setupStatusFilter() {
+  const wrap = document.getElementById('status-filters');
+  wrap.addEventListener('click', e => {
+    const btn = e.target.closest('.chip'); if (!btn) return;
+    wrap.querySelectorAll('.chip').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeStatus = btn.dataset.status;
+    applyFilters();
+  });
 }
 
-// ── LISTA ────────────────────────────────────────────────────────────
 function buildCategoryFilter() {
   const wrap = document.getElementById('cat-filters');
   if (!wrap) return;
-  wrap.innerHTML = `<button class="chip active" data-cat="">Todos</button>` +
+  wrap.innerHTML =
+    `<button class="chip active" data-cat="">Todas</button>` +
     categorias.map(c => `<button class="chip" data-cat="${c}">${c}</button>`).join('');
   wrap.addEventListener('click', e => {
     const btn = e.target.closest('.chip'); if (!btn) return;
     wrap.querySelectorAll('.chip').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
-    const cat = btn.dataset.cat;
-    renderPlaces(cat ? allPlaces.filter(p => p.category === cat) : allPlaces);
+    activeCat = btn.dataset.cat;
+    applyFilters();
   });
 }
 
+function setupSearch() {
+  const input = document.getElementById('places-search');
+  input.addEventListener('input', () => {
+    searchQuery = input.value.trim().toLowerCase();
+    applyFilters();
+  });
+}
+
+// ── LISTA ──────────────────────────────────────────────────────────────
 async function loadPlaces() {
   const { data } = await supabaseClient.from('places').select('*').eq('couple_id', coupleId).order('created_at', { ascending: false });
   allPlaces = data || [];
-  renderPlaces(allPlaces);
+  applyFilters();
 }
 
 function renderPlaces(places) {
   const lista = document.getElementById('places-list');
   if (!places.length) {
-    lista.innerHTML = `<div class="empty-state"><p class="empty-icon">📍</p><p>Nenhum lugar salvo ainda.</p><p class="empty-hint">Toque em + para adicionar o primeiro!</p></div>`;
+    const msg = (activeStatus || activeCat || searchQuery)
+      ? 'Nenhum lugar encontrado com esses filtros.'
+      : 'Nenhum lugar salvo ainda.';
+    lista.innerHTML = `<div class="empty-state"><p class="empty-icon">📍</p><p>${msg}</p>${!activeStatus && !activeCat && !searchQuery ? '<p class="empty-hint">Toque em + para adicionar o primeiro!</p>' : ''}</div>`;
     return;
   }
   lista.innerHTML = places.map(p => {
@@ -148,13 +144,67 @@ function renderPlaces(places) {
       <span class="place-arrow">›</span>
     </div>`;
   }).join('');
-
   lista.querySelectorAll('.place-card').forEach(card => {
     card.addEventListener('click', () => showDetailScreen(card.dataset.id));
   });
 }
 
-// ── MODAL ────────────────────────────────────────────────────────────
+// ── DETALHE ────────────────────────────────────────────────────────────
+function renderDetail(p) {
+  document.getElementById('detail-name').textContent = p.name;
+  const catBadge = document.getElementById('detail-category-badge');
+  catBadge.textContent = p.category || '';
+  catBadge.className = p.category ? 'chip-sm' : '';
+
+  const vals = RATING_FIELDS.map(f => p[f.key]).filter(v => v != null && v > 0);
+  const avg = vals.length ? (vals.reduce((a, b) => a + b, 0) / vals.length) : null;
+
+  let html = '';
+  html += `<div class="detail-top">`;
+  html += `<span class="status-badge ${statusColors[p.status] || 'status-quero'}">${statusLabels[p.status] || p.status}</span>`;
+  if (avg !== null) html += `<span class="avg-badge">⭐ ${avg.toFixed(1)}</span>`;
+  html += `</div>`;
+
+  if (p.address || p.maps_url) {
+    html += `<div class="detail-section">`;
+    if (p.address) html += `<div class="detail-addr">📍 ${esc(p.address)}</div>`;
+    if (p.maps_url) html += `<a href="${esc(p.maps_url)}" target="_blank" rel="noopener" class="maps-btn">🗺️ Abrir no Google Maps</a>`;
+    html += `</div>`;
+  }
+
+  const hasAny = RATING_FIELDS.some(f => p[f.key] > 0);
+  if (hasAny) {
+    html += `<div class="detail-section">`;
+    html += `<div class="detail-section-title">Avaliações</div>`;
+    html += `<div class="detail-ratings">`;
+    RATING_FIELDS.forEach(f => {
+      const val = p[f.key] || 0;
+      if (!val) return;
+      html += `<div class="detail-rating-row">
+        <span class="detail-rating-label">${f.label}</span>
+        <span class="detail-stars">${starsHtml(val)}</span>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  if (p.notes) {
+    html += `<div class="detail-section">`;
+    html += `<div class="detail-section-title">Observações</div>`;
+    html += `<div class="detail-notes">${esc(p.notes).replace(/\n/g, '<br>')}</div>`;
+    html += `</div>`;
+  }
+
+  document.getElementById('detail-body').innerHTML = html;
+}
+
+function starsHtml(val) {
+  let s = '';
+  for (let i = 1; i <= 5; i++) s += `<span class="star-d ${i <= val ? 'on' : ''}">★</span>`;
+  return s;
+}
+
+// ── MODAL ──────────────────────────────────────────────────────────────
 function setupModal() {
   const modal  = document.getElementById('place-modal');
   const form   = document.getElementById('place-form');
@@ -164,7 +214,6 @@ function setupModal() {
   catSel.innerHTML = `<option value="">Sem categoria</option>` + categorias.map(c => `<option value="${c}">${c}</option>`).join('');
   statusSel.innerHTML = statusOpts.map(s => `<option value="${s}">${statusLabels[s]}</option>`).join('');
 
-  // montar estrelas clicáveis
   document.querySelectorAll('.star-group').forEach(group => {
     const field = group.dataset.field;
     for (let i = 1; i <= 5; i++) {
@@ -253,19 +302,16 @@ function openEdit(id) {
   openModal();
 }
 
-// estrelas
 function setStars(group, val) {
   group.dataset.value = val;
   group.querySelectorAll('.star-btn').forEach(btn => {
     btn.classList.toggle('on', parseInt(btn.dataset.val) <= val);
   });
 }
-function getStars(group) {
-  return parseInt(group.dataset.value) || 0;
-}
+function getStars(group) { return parseInt(group.dataset.value) || 0; }
 
 function openModal()  { document.getElementById('place-modal').classList.add('open'); }
 function closeModal() { document.getElementById('place-modal').classList.remove('open'); }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 
-init();
+document.addEventListener('DOMContentLoaded', init);
