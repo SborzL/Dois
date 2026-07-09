@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>Dois - Lista de Desejos</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Work+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="desejos.css">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/icon-180.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="theme-color" content="#1f7a5c">
+</head>
+<body>
+<div class="phone">
+
+  <!-- TOP BAR -->
+  <header class="top-bar">
+    <span class="page-title">💝 Lista de Desejos</span>
+    <button class="btn-icon" id="btn-nova" aria-label="Adicionar desejo">+</button>
+  </header>
+
+  <!-- FILTROS -->
+  <div class="filtros-bar">
+    <button class="filtro active" data-filtro="todos">Todos</button>
+    <button class="filtro" data-filtro="pendente">Pendentes</button>
+    <button class="filtro" data-filtro="concluido">Realizados ✨</button>
+  </div>
+
+  <!-- LISTA -->
+  <main class="content">
+    <div id="desejos-list"></div>
+  </main>
+
+  <!-- NAV -->
+  <nav class="bottom-nav">
+    <a href="index.html" class="nav-item"><span class="nav-icon">🏠</span><span>Início</span></a>
+    <a href="lugares.html" class="nav-item"><span class="nav-icon">📍</span><span>Lugares</span></a>
+    <a href="checklist.html" class="nav-item"><span class="nav-icon">✅</span><span>Lista</span></a>
+    <a href="agenda.html" class="nav-item"><span class="nav-icon">📅</span><span>Agenda</span></a>
+    <a href="perfil.html" class="nav-item"><span class="nav-icon">👤</span><span>Perfil</span></a>
+  </nav>
+</div>
+
+<!-- MODAL NOVO DESEJO -->
+<div class="modal-overlay" id="modal-novo">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="modal-titulo-label">Novo Desejo</h3>
+      <button class="modal-close" id="modal-fechar" aria-label="Fechar">✕</button>
+    </div>
+
+    <div class="modal-field">
+      <label for="inp-titulo">Título *</label>
+      <input class="field-input" id="inp-titulo" type="text" placeholder="Ex: Viagem para Paris..." maxlength="80">
+    </div>
+
+    <div class="modal-field">
+      <label for="inp-desc">Descrição (opcional)</label>
+      <textarea class="modal-textarea" id="inp-desc" rows="3" placeholder="Detalhes, link, onde viu..."></textarea>
+    </div>
+
+    <div class="modal-row">
+      <div class="modal-field flex1">
+        <label for="inp-cat">Categoria</label>
+        <select class="field-input" id="inp-cat">
+          <option value="viagem">✈️ Viagem</option>
+          <option value="restaurante">🍽️ Restaurante</option>
+          <option value="experiencia">🎢 Experiência</option>
+          <option value="compra">🛍️ Compra</option>
+          <option value="filme">🎬 Filme/Série</option>
+          <option value="outro" selected>💫 Outro</option>
+        </select>
+      </div>
+      <div class="modal-field flex1">
+        <label for="inp-prio">Prioridade</label>
+        <select class="field-input" id="inp-prio">
+          <option value="alta">🔴 Alta</option>
+          <option value="media" selected>🟡 Média</option>
+          <option value="baixa">🟢 Baixa</option>
+        </select>
+      </div>
+    </div>
+
+    <p class="modal-error" id="modal-erro"></p>
+
+    <div class="modal-actions">
+      <button class="btn-primary" id="btn-salvar">Adicionar Desejo 💝</button>
+      <button class="btn-cancel" id="btn-cancelar">Cancelar</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VER -->
+<div class="modal-overlay" id="modal-ver">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="ver-title">Desejo</h3>
+      <button class="modal-close" id="ver-fechar" aria-label="Fechar">✕</button>
+    </div>
+    <div id="ver-body"></div>
+    <div class="modal-actions" style="margin-top:.5rem">
+      <button class="btn-primary" id="ver-realizar">Marcar como Realizado ✨</button>
+      <button class="btn-cancel btn-xs danger" id="ver-deletar">Excluir</button>
+    </div>
+  </div>
+</div>
+
+<div id="toast" class="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="supabase-client.js"></script>
+<script src="desejos.js"></script>
+</body>
+</html>
