@@ -112,22 +112,24 @@ function setupRecado() {
 // ── DESEJOS PREVIEW ──────────────────────────────────────────────
 async function loadWishesPreview() {
   const { data: wishes } = await supabaseClient
-    .from('wishes')
+    .from('lista_desejos')
     .select('*')
     .eq('couple_id', coupleId)
-    .eq('done', false)
+    .eq('concluido', false)
     .order('created_at', { ascending: false })
     .limit(3);
   if (!wishes?.length) return;
   document.getElementById('wishes-section').style.display = '';
+  const prioColor = { alta: '#e74c3c', media: '#f39c12', baixa: '#27ae60' };
   document.getElementById('wishes-block').innerHTML = wishes.map(w => {
-    const prioColor = { alta: '#e74c3c', média: '#f39c12', baixa: '#27ae60' };
-    const prio = w.priority || 'média';
+    const prio = w.prioridade || 'media';
+    const cat = w.categoria || 'outro';
+    const catEmojis = { viagem:'✈️', restaurante:'🍽️', experiencia:'🎢', compra:'🛍️', filme:'🎬', outro:'💫' };
     return `<div class="wish-mini-row">
-      <span class="wish-mini-emoji">${w.emoji || '💝'}</span>
+      <span class="wish-mini-emoji">${catEmojis[cat] || '💝'}</span>
       <div class="wish-mini-info">
-        <p class="wish-mini-title">${esc(w.title)}</p>
-        ${w.category ? `<span class="chip-xs">${esc(w.category)}</span>` : ''}
+        <p class="wish-mini-title">${esc(w.titulo)}</p>
+        ${w.categoria ? `<span class="chip-xs">${esc(w.categoria)}</span>` : ''}
       </div>
       <span class="wish-mini-prio" style="color:${prioColor[prio] || '#888'}">${prio}</span>
     </div>`;
@@ -295,14 +297,15 @@ async function loadCounts() {
   const hoje = new Date().toISOString().split('T')[0];
   const [
     { count: pl }, { count: li }, { count: ev },
-    { count: di }, { count: go }, { count: wi }
+    { count: di }, { count: go }, { count: wi }, { count: ca }
   ] = await Promise.all([
     supabaseClient.from('places').select('*', { count: 'exact', head: true }).eq('couple_id', coupleId),
     supabaseClient.from('checklists').select('*', { count: 'exact', head: true }).eq('couple_id', coupleId),
     supabaseClient.from('events').select('*', { count: 'exact', head: true }).eq('couple_id', coupleId).gte('event_date', hoje),
     supabaseClient.from('diary_entries').select('*', { count: 'exact', head: true }).eq('couple_id', coupleId),
     supabaseClient.from('goals').select('*', { count: 'exact', head: true }).eq('couple_id', coupleId).eq('done', false),
-    supabaseClient.from('wishes').select('*', { count: 'exact', head: true }).eq('couple_id', coupleId).eq('done', false),
+    supabaseClient.from('lista_desejos').select('*', { count: 'exact', head: true }).eq('couple_id', coupleId).eq('concluido', false),
+    supabaseClient.from('capsulas').select('*', { count: 'exact', head: true }).eq('couple_id', coupleId),
   ]);
   document.getElementById('count-lugares').textContent  = `${pl||0} salvo${pl!==1?'s':''}`;
   document.getElementById('count-listas').textContent   = `${li||0} lista${li!==1?'s':''}`;
@@ -310,6 +313,7 @@ async function loadCounts() {
   document.getElementById('count-diario').textContent   = `${di||0} entrada${di!==1?'s':''}`;
   document.getElementById('count-metas').textContent    = `${go||0} ativa${go!==1?'s':''}`;
   document.getElementById('count-desejos').textContent  = `${wi||0} desejo${wi!==1?'s':''}`;
+  document.getElementById('count-capsulas').textContent = `${ca||0} cápsula${ca!==1?'s':''}`;
 }
 
 function truncate(str, max) { return str.length > max ? str.slice(0, max) + '…' : str; }

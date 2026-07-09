@@ -20,14 +20,14 @@ async function init() {
   if (!session) { window.location.href = 'login.html'; return; }
   USER_ID = session.user.id;
 
-  const { data: perfil } = await supabaseClient
-    .from('profiles')
+  const { data: m } = await supabaseClient
+    .from('couple_members')
     .select('couple_id')
-    .eq('id', USER_ID)
-    .single();
+    .eq('user_id', USER_ID)
+    .maybeSingle();
 
-  if (!perfil?.couple_id) { window.location.href = 'conectar.html'; return; }
-  COUPLE_ID = perfil.couple_id;
+  if (!m?.couple_id) { window.location.href = 'conectar.html'; return; }
+  COUPLE_ID = m.couple_id;
 
   await carregar();
   bindEvents();
