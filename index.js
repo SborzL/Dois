@@ -16,6 +16,7 @@ const SEM   = ['DOM','SEG','TER','QUA','QUI','SEX','SÁB'];
 
 let currentUser = null;
 let coupleId    = null;
+let myHumorEmoji = null;
 
 async function waitForSession(maxWaitMs = 8000) {
   const { data: { session } } = await supabaseClient.auth.getSession();
@@ -36,11 +37,12 @@ async function init() {
   if (!m?.couple_id) { window.location.href = 'conectar.html'; return; }
   coupleId = m.couple_id;
   await Promise.all([
-    loadHero(), loadRecado(), loadNextEvents(),
+    loadHero(), loadHumorDia(), loadRecado(), loadNextEvents(),
     loadWishesPreview(), loadGoalsPreview(),
     loadLastPlace(), loadListsSummary(), loadCounts()
   ]);
   setupRecado();
+  setupHumor();
 }
 
 async function loadHero() {
@@ -68,6 +70,85 @@ async function loadHero() {
   }
 }
 
+/* ─────────────────── HUMOR DO DIA ─────────────────── */
+async function loadHumorDia() {
+  const hoje = new Date().toISOString().split('T')[0];
+  // busca membros do casal para pegar o parceiro
+  const { data: members } = await supabaseClient
+    .from('couple_members').select('user_id').eq('couple_id', coupleId);
+  const partnerId = members?.find(m => m.user_id !== currentUser.id)?.user_id;
+
+  // busca humores de hoje para o casal
+  const { data: humores } = await supabaseClient
+    .from('humor_dia')
+    .select('user_id, emoji, texto')
+    .eq('couple_id', coupleId)
+    .eq('data', hoje);
+
+  const meuHumor      = humores?.find(h => h.user_id === currentUser.id);
+  const partnerHumor  = humores?.find(h => h.user_id === partnerId);
+
+  // nome do parceiro
+  if (partnerId) {
+    const { data: pp } = await supabaseClient.from('profiles').select('name').eq('id', partnerId).maybeSingle();
+    if (pp?.name) document.getElementById('humor-partner-name').textContent = pp.name.split(' ')[0];
+  }
+
+  // exibe meu humor
+  if (meuHumor) {
+    myHumorEmoji = meuHumor.emoji;
+    const el = document.getElementById('humor-me-display');
+    el.innerHTML = `<span class="humor-emoji-big">${meuHumor.emoji}</span>${meuHumor.texto ? `<span class="humor-texto">${esc(meuHumor.texto)}</span>` : ''}`;
+    // marca o botão selecionado
+    document.querySelectorAll('#humor-me-emojis .humor-emoji-btn').forEach(btn => {
+      if (btn.dataset.emoji === meuHumor.emoji) btn.classList.add('selected');
+    });
+    document.getElementById('humor-me-save').classList.remove('show');
+    document.getElementById('humor-me-text').classList.remove('show');
+  }
+
+  // exibe humor do parceiro
+  if (partnerHumor) {
+    const el = document.getElementById('humor-partner-display');
+    el.innerHTML = `<span class="humor-emoji-big">${partnerHumor.emoji}</span>${partnerHumor.texto ? `<span class="humor-texto">${esc(partnerHumor.texto)}</span>` : ''}`;
+  }
+}
+
+function setupHumor() {
+  const emojiBtns = document.querySelectorAll('#humor-me-emojis .humor-emoji-btn');
+  const textInput = document.getElementById('humor-me-text');
+  const saveBtn   = document.getElementById('humor-me-save');
+
+  emojiBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+      emojiBtns.forEach(b => b.classList.remove('selected'));
+      btn.classList.add('selected');
+      myHumorEmoji = btn.dataset.emoji;
+      textInput.classList.add('show');
+      saveBtn.classList.add('show');
+    });
+  });
+
+  saveBtn.addEventListener('click', async () => {
+    if (!myHumorEmoji) return;
+    const hoje = new Date().toISOString().split('T')[0];
+    const texto = textInput.value.trim() || null;
+    saveBtn.disabled = true; saveBtn.textContent = 'Salvando...';
+    const { error } = await supabaseClient.from('humor_dia').upsert({
+      couple_id: coupleId,
+      user_id: currentUser.id,
+      data: hoje,
+      emoji: myHumorEmoji,
+      texto
+    }, { onConflict: 'couple_id,user_id,data' });
+    saveBtn.disabled = false; saveBtn.textContent = 'Salvar';
+    if (error) { showToast('Erro: ' + error.message); return; }
+    showToast('Humor salvo! 🌡️');
+    await loadHumorDia();
+  });
+}
+
+/* ─────────────────── RECADO ─────────────────── */
 async function loadRecado() {
   const hoje = new Date().toISOString().split('T')[0];
   const { data: msgs } = await supabaseClient
@@ -86,11 +167,57 @@ async function loadRecado() {
     const isMe = m.author_id === currentUser.id;
     const nome = m.profiles?.name || (isMe ? 'Você' : 'Parceiro(a)');
     const hora = new Date(m.created_at).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-    return `<div class="recado-card ${isMe ? 'mine' : 'theirs'}">
+    const reactions = m.reactions || {};
+    // botões de reação existentes
+    const EMOJIS = ['❤️','😍','😂','🥹'];
+    const reactionHtml = EMOJIS.map(emoji => {
+      const r = reactions[emoji] || { count: 0, users: [] };
+      const reacted = r.users?.includes(currentUser.id);
+      const count = r.count || 0;
+      if (count === 0 && !reacted) return ''; // só mostra se houver reações
+      return `<button class="reaction-btn ${reacted ? 'reacted' : ''}" data-msg-id="${m.id}" data-emoji="${emoji}">
+        ${emoji}<span class="r-count">${count}</span>
+      </button>`;
+    }).filter(Boolean).join('');
+    // botões rápidos para adicionar
+    const quickHtml = EMOJIS.map(emoji => {
+      const r = reactions[emoji] || { count: 0, users: [] };
+      const reacted = r.users?.includes(currentUser.id);
+      if (reacted) return ''; // já reagiu, não mostra de novo
+      return `<button class="reaction-quick-btn" data-msg-id="${m.id}" data-emoji="${emoji}">${emoji}</button>`;
+    }).filter(Boolean).join('');
+    return `<div class="recado-card ${isMe ? 'mine' : 'theirs'}" id="msg-${m.id}">
       <p class="recado-text">${esc(m.content)}</p>
       <p class="recado-meta">${esc(nome)} · ${hora}</p>
+      ${reactionHtml ? `<div class="recado-reactions">${reactionHtml}</div>` : ''}
+      ${quickHtml ? `<div class="reaction-quick">${quickHtml}</div>` : ''}
     </div>`;
   }).join('');
+
+  // bind reaction buttons
+  document.querySelectorAll('.reaction-btn, .reaction-quick-btn').forEach(btn => {
+    btn.addEventListener('click', () => handleReaction(btn.dataset.msgId, btn.dataset.emoji));
+  });
+}
+
+async function handleReaction(msgId, emoji) {
+  // busca reações atuais
+  const { data: msg } = await supabaseClient.from('daily_messages').select('reactions').eq('id', msgId).maybeSingle();
+  const reactions = msg?.reactions || {};
+  const r = reactions[emoji] || { count: 0, users: [] };
+  const users = r.users || [];
+  const idx = users.indexOf(currentUser.id);
+  if (idx >= 0) {
+    // toggle off
+    users.splice(idx, 1);
+    r.count = Math.max(0, (r.count || 1) - 1);
+  } else {
+    users.push(currentUser.id);
+    r.count = (r.count || 0) + 1;
+  }
+  reactions[emoji] = { count: r.count, users };
+  await supabaseClient.from('daily_messages').update({ reactions }).eq('id', msgId);
+  await loadRecado();
 }
 
 function setupRecado() {

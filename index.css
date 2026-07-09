@@ -27,9 +27,9 @@ body {
 
 /* ── Hero ───────────────────────────────────────────── */
 .hero-card {
-  background: linear-gradient(135deg, #e6f7ef 0%, #d0f0e0 100%);
-  border-radius: 0 0 24px 24px;
-  padding: 20px 20px 22px;
+  background: linear-gradient(150deg, #1f7a5c 0%, #2d9e73 60%, #3dbf85 100%);
+  border-radius: 0 0 28px 28px;
+  padding: 20px 20px 24px;
   padding-top: calc(20px + env(safe-area-inset-top));
   margin-bottom: 0;
 }
@@ -37,11 +37,11 @@ body {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
-  margin-bottom: 10px;
+  margin-bottom: 12px;
 }
 .hero-date {
   font-size: .78rem;
-  color: #2d9e73;
+  color: rgba(255,255,255,.70);
   margin-bottom: 4px;
   text-transform: capitalize;
   font-weight: 500;
@@ -49,34 +49,34 @@ body {
 .hero-greeting {
   font-size: 1.3rem;
   font-weight: 700;
-  color: #1a2e1a;
+  color: #fff;
 }
 .hero-days {
   display: flex;
   flex-direction: column;
   align-items: center;
-  background: #fff;
-  border: 1.5px solid #b8e8cc;
-  border-radius: 12px;
+  background: rgba(255,255,255,.18);
+  border: 1.5px solid rgba(255,255,255,.30);
+  border-radius: 14px;
   padding: 8px 14px;
-  min-width: 60px;
-  box-shadow: 0 2px 8px rgba(45,158,115,.10);
+  min-width: 62px;
+  backdrop-filter: blur(4px);
 }
 .days-num {
   font-size: 1.6rem;
   font-weight: 700;
-  color: #2d9e73;
+  color: #fff;
   line-height: 1;
 }
 .days-label {
   font-size: .65rem;
-  color: #6aab88;
+  color: rgba(255,255,255,.75);
   text-align: center;
   margin-top: 2px;
 }
 .hero-frase {
   font-size: .82rem;
-  color: #4a8a68;
+  color: rgba(255,255,255,.80);
   font-style: italic;
   line-height: 1.5;
 }
@@ -134,11 +134,150 @@ body {
 .block h2 { font-size: .95rem; font-weight: 700; color: #1a2e1a; }
 .link-sm { font-size: .8rem; color: #2d9e73; text-decoration: none; background: none; border: none; cursor: pointer; font-family: inherit; }
 
+/* ── Humor do dia ─────────────────────────────────────── */
+.humor-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 4px;
+}
+.humor-card {
+  background: #f8fdf9;
+  border: 1.5px solid #e0ede5;
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.humor-card.active-me {
+  border-color: #2d9e73;
+  background: #f0fbf5;
+}
+.humor-name {
+  font-size: .72rem;
+  font-weight: 600;
+  color: #7aab90;
+  text-transform: uppercase;
+  letter-spacing: .04em;
+}
+.humor-display {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  min-height: 58px;
+  justify-content: center;
+}
+.humor-emoji-big { font-size: 2rem; line-height: 1; }
+.humor-texto {
+  font-size: .75rem;
+  color: #4a8a68;
+  text-align: center;
+  line-height: 1.3;
+  font-style: italic;
+}
+.humor-empty {
+  font-size: .78rem;
+  color: #bbb;
+  text-align: center;
+}
+.humor-emojis {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+.humor-emoji-btn {
+  font-size: 1.3rem;
+  background: none;
+  border: 1.5px solid transparent;
+  border-radius: 8px;
+  padding: 3px 5px;
+  cursor: pointer;
+  transition: border-color .12s, background .12s;
+  -webkit-tap-highlight-color: transparent;
+  line-height: 1;
+}
+.humor-emoji-btn:hover,
+.humor-emoji-btn.selected { border-color: #2d9e73; background: #e6f7ef; }
+.humor-text-input {
+  width: 100%;
+  background: #fff;
+  border: 1.5px solid #d0e8d8;
+  border-radius: 8px;
+  font-family: inherit;
+  font-size: .8rem;
+  color: #1a2e1a;
+  padding: 6px 8px;
+  resize: none;
+  outline: none;
+  display: none;
+}
+.humor-text-input.show { display: block; }
+.humor-text-input:focus { border-color: #2d9e73; }
+.humor-save-btn {
+  background: #2d9e73;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 6px 0;
+  width: 100%;
+  font-size: .8rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  display: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.humor-save-btn.show { display: block; }
+
 /* ── Recado ───────────────────────────────────────────── */
 .recado-card { background: #f8fdf9; border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; border: 1.5px solid #e0ede5; }
 .recado-card.mine { border-color: #b8e8cc; }
 .recado-text { font-size: .9rem; color: #1a2e1a; line-height: 1.5; margin-bottom: 4px; }
-.recado-meta { font-size: .72rem; color: #7aab90; }
+.recado-meta { font-size: .72rem; color: #7aab90; margin-bottom: 6px; }
+.recado-reactions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  align-items: center;
+}
+.reaction-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  background: #f0f4f0;
+  border: 1.5px solid #e0ede5;
+  border-radius: 20px;
+  padding: 3px 8px;
+  font-size: .82rem;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background .12s, border-color .12s;
+  -webkit-tap-highlight-color: transparent;
+  line-height: 1;
+}
+.reaction-btn.reacted { background: #e6f7ef; border-color: #2d9e73; }
+.reaction-btn .r-count { font-size: .72rem; font-weight: 600; color: #4a8a68; }
+.reaction-quick {
+  display: flex;
+  gap: 4px;
+  flex-wrap: wrap;
+  margin-top: 6px;
+}
+.reaction-quick-btn {
+  font-size: 1.1rem;
+  background: none;
+  border: 1.5px solid #e0ede5;
+  border-radius: 20px;
+  padding: 3px 7px;
+  cursor: pointer;
+  transition: border-color .12s, background .12s;
+  -webkit-tap-highlight-color: transparent;
+  line-height: 1;
+}
+.reaction-quick-btn:hover { border-color: #2d9e73; background: #f0fbf5; }
 .recado-empty { font-size: .85rem; color: #aaa; text-align: center; padding: 8px 0; }
 .recado-input { width: 100%; background: #f8fdf9; border: 1.5px solid #d0e8d8; border-radius: 10px; color: #1a2e1a; font-family: inherit; font-size: .9rem; padding: 10px; resize: none; outline: none; }
 .recado-input:focus { border-color: #2d9e73; }
