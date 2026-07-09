@@ -15,16 +15,39 @@ const CAT_LABEL = {
 };
 const PRIO_EMOJI = { alta:'🔴', media:'🟡', baixa:'🟢' };
 
-async function init() {
+// Aguarda sessão estar disponível antes de inicializar
+async function waitForSession(maxWaitMs = 3000) {
   const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session) return session;
+
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(null), maxWaitMs);
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        clearTimeout(timer);
+        subscription.unsubscribe();
+        resolve(session);
+      }
+    });
+  });
+}
+
+async function init() {
+  const session = await waitForSession();
   if (!session) { window.location.href = 'login.html'; return; }
   USER_ID = session.user.id;
 
-  const { data: m } = await supabaseClient
+  const { data: m, error: mErr } = await supabaseClient
     .from('couple_members')
     .select('couple_id')
     .eq('user_id', USER_ID)
     .maybeSingle();
+
+  if (mErr) {
+    console.error('Erro ao buscar couple_members:', mErr);
+    mostrarErroGlobal('Erro de conexão. Tente recarregar a página.');
+    return;
+  }
 
   if (!m?.couple_id) { window.location.href = 'conectar.html'; return; }
   COUPLE_ID = m.couple_id;
@@ -33,12 +56,31 @@ async function init() {
   bindEvents();
 }
 
+function mostrarErroGlobal(msg) {
+  const el = document.getElementById('desejos-list');
+  if (el) {
+    el.innerHTML = `
+      <div class="empty-state">
+        <div class="empty-icon">⚠️</div>
+        <p class="empty-title">Algo deu errado</p>
+        <p class="empty-sub">${msg}</p>
+        <button class="btn-primary" style="margin-top:1rem" onclick="location.reload()">Recarregar</button>
+      </div>`;
+  }
+}
+
 async function carregar() {
-  const { data } = await supabaseClient
+  const { data, error } = await supabaseClient
     .from('lista_desejos')
     .select('*')
     .eq('couple_id', COUPLE_ID)
     .order('created_at', { ascending: false });
+
+  if (error) {
+    console.error('Erro ao carregar desejos:', error);
+    mostrarErroGlobal('Não foi possível carregar os desejos.');
+    return;
+  }
 
   desejos = data || [];
   renderLista();
@@ -136,10 +178,13 @@ async function toggleConcluido(id) {
     concluido: novoConcluido,
     concluido_em: novoConcluido ? new Date().toISOString() : null
   }).eq('id', id);
-  if (!error) {
-    toast(novoConcluido ? '✨ Desejo realizado!' : 'Marcado como pendente');
-    await carregar();
+  if (error) {
+    console.error('Erro ao atualizar desejo:', error);
+    toast('Erro ao atualizar. Tente novamente.');
+    return;
   }
+  toast(novoConcluido ? '✨ Desejo realizado!' : 'Marcado como pendente');
+  await carregar();
 }
 
 function bindEvents() {
@@ -211,7 +256,11 @@ async function salvar() {
   btn.textContent = 'Adicionar Desejo 💝';
   btn.disabled = false;
 
-  if (error) { erro.textContent = 'Erro ao salvar. Tente novamente.'; return; }
+  if (error) {
+    console.error('Erro ao salvar desejo:', error);
+    erro.textContent = `Erro ao salvar: ${error.message || 'Tente novamente.'}`;
+    return;
+  }
 
   fecharModal();
   toast('Desejo adicionado! 💝');
@@ -221,7 +270,12 @@ async function salvar() {
 async function deletar() {
   if (!verDesejoId) return;
   if (!confirm('Excluir este desejo?')) return;
-  await supabaseClient.from('lista_desejos').delete().eq('id', verDesejoId);
+  const { error } = await supabaseClient.from('lista_desejos').delete().eq('id', verDesejoId);
+  if (error) {
+    console.error('Erro ao deletar desejo:', error);
+    toast('Erro ao excluir. Tente novamente.');
+    return;
+  }
   document.getElementById('modal-ver').classList.remove('open');
   toast('Desejo excluído.');
   await carregar();
