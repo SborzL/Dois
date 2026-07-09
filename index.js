@@ -24,8 +24,24 @@ let roletaAngle = 0;
 let currentUser = null;
 let coupleId    = null;
 
-async function init() {
+// Aguarda sessão — mesmo padrão do capsula.js e desejos.js
+async function waitForSession(maxWaitMs = 8000) {
   const { data: { session } } = await supabaseClient.auth.getSession();
+  if (session) return session;
+  return new Promise((resolve) => {
+    const timer = setTimeout(() => resolve(null), maxWaitMs);
+    const { data: { subscription } } = supabaseClient.auth.onAuthStateChange((event, session) => {
+      if (session) {
+        clearTimeout(timer);
+        subscription.unsubscribe();
+        resolve(session);
+      }
+    });
+  });
+}
+
+async function init() {
+  const session = await waitForSession();
   if (!session) { window.location.href = 'login.html'; return; }
   currentUser = session.user;
   const { data: m } = await supabaseClient.from('couple_members').select('couple_id').eq('user_id', currentUser.id).maybeSingle();
@@ -148,7 +164,6 @@ async function loadRoleta() {
     .limit(12);
   if (error) { console.error('Roleta erro:', error); return; }
   if (!places?.length) return;
-  // Mapeia emoji pela categoria
   roletaPlaces = places.map(p => ({
     ...p,
     emoji: CAT_EMOJI[(p.category || '').toLowerCase()] || '📍'
@@ -180,7 +195,6 @@ function drawRoleta(startAngle) {
     ctx.strokeStyle = '#fff';
     ctx.lineWidth = 2;
     ctx.stroke();
-    // Texto
     ctx.save();
     ctx.translate(cx, cy);
     ctx.rotate(start + slice / 2);
@@ -191,7 +205,6 @@ function drawRoleta(startAngle) {
     ctx.fillText(label, r - 8, 4);
     ctx.restore();
   });
-  // Centro
   ctx.beginPath();
   ctx.arc(cx, cy, 16, 0, 2 * Math.PI);
   ctx.fillStyle = '#fff';
@@ -206,12 +219,12 @@ function spinRoleta() {
   roletaSpinning = true;
   document.getElementById('roleta-btn').disabled = true;
   document.getElementById('roleta-result').textContent = '';
-  const extra   = Math.random() * Math.PI * 2;
-  const spins   = (5 + Math.floor(Math.random() * 5)) * Math.PI * 2;
-  const total   = spins + extra;
+  const extra    = Math.random() * Math.PI * 2;
+  const spins    = (5 + Math.floor(Math.random() * 5)) * Math.PI * 2;
+  const total    = spins + extra;
   const duration = 3500;
-  const start   = performance.now();
-  const from    = roletaAngle;
+  const start    = performance.now();
+  const from     = roletaAngle;
   function step(now) {
     const elapsed = now - start;
     const t       = Math.min(elapsed / duration, 1);
@@ -219,16 +232,14 @@ function spinRoleta() {
     roletaAngle   = from + total * ease;
     drawRoleta(roletaAngle);
     if (t < 1) { requestAnimationFrame(step); return; }
-    // Winner
     roletaSpinning = false;
     document.getElementById('roleta-btn').disabled = false;
-    const n       = roletaPlaces.length;
-    const slice   = (2 * Math.PI) / n;
-    const pointer = -Math.PI / 2; // top
-    const norm    = ((pointer - roletaAngle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
-    const winner  = roletaPlaces[Math.floor(norm / slice) % n];
-    document.getElementById('roleta-result').textContent =
-      `${winner.emoji} ${winner.name}!`;
+    const n      = roletaPlaces.length;
+    const slice  = (2 * Math.PI) / n;
+    const pointer = -Math.PI / 2;
+    const norm   = ((pointer - roletaAngle) % (2 * Math.PI) + 2 * Math.PI) % (2 * Math.PI);
+    const winner = roletaPlaces[Math.floor(norm / slice) % n];
+    document.getElementById('roleta-result').textContent = `${winner.emoji} ${winner.name}!`;
     showToast(`Que tal ir: ${winner.name}? 🎉`);
   }
   requestAnimationFrame(step);
@@ -256,7 +267,7 @@ async function loadNextEvents() {
     return;
   }
   bloco.innerHTML = evs.map(ev => {
-    const d   = new Date(ev.event_date + 'T12:00:00');
+    const d    = new Date(ev.event_date + 'T12:00:00');
     const hora = ev.event_time ? ev.event_time.slice(0,5).replace(':','h') : '';
     const sub  = [hora, ev.place].filter(Boolean).join(' · ');
     const isHoje = ev.event_date === hoje;
@@ -329,4 +340,5 @@ function diffDays(dateStr) {
 }
 function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function showToast(msg) { const t = document.getElementById('toast'); if (!t) return; t.textContent = msg; t.classList.add('show'); setTimeout(() => t.classList.remove('show'), 2500); }
-init();
+
+document.addEventListener('DOMContentLoaded', init);
