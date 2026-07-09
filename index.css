@@ -13,7 +13,8 @@
   --radius-full:9999px;
   --font-body:'Work Sans',sans-serif;
   --nav-h:60px;
-  --content-max:680px;
+  --content-max:640px;
+  --side-pad: clamp(1rem, 5vw, 2rem);
 }
 
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
@@ -34,7 +35,6 @@ body{
   flex-direction:column;
 }
 
-/* Remove o wrapper .phone – tudo agora é full-width */
 .phone{
   width:100%;
   flex:1;
@@ -43,22 +43,19 @@ body{
   min-height:0;
 }
 
-/* Área de conteúdo rolável */
 .content{
   flex:1;
   overflow-y:auto;
   -webkit-overflow-scrolling:touch;
-  padding:
-    calc(env(safe-area-inset-top,0px) + 1.1rem)
-    max(1rem, env(safe-area-inset-right,0px))
-    calc(env(safe-area-inset-bottom,0px) + var(--nav-h) + 1rem)
-    max(1rem, env(safe-area-inset-left,0px));
+  padding-top:    calc(env(safe-area-inset-top,0px) + 1.25rem);
+  padding-bottom: calc(env(safe-area-inset-bottom,0px) + var(--nav-h) + 1.25rem);
+  padding-left:   max(var(--side-pad), env(safe-area-inset-left,0px));
+  padding-right:  max(var(--side-pad), env(safe-area-inset-right,0px));
   display:flex;
   flex-direction:column;
   gap:1rem;
 }
 
-/* Limita largura do conteúdo em telas grandes mantendo padding lateral */
 .content > *{
   width:100%;
   max-width:var(--content-max);
@@ -69,9 +66,9 @@ body{
 .hero-card{
   background:linear-gradient(140deg,#2d9e73 0%,#14523f 100%);
   border-radius:var(--radius-lg);
-  padding:1.25rem 1rem;
+  padding:1.25rem 1.1rem;
   color:#fff;
-  box-shadow:0 4px 16px rgba(31,122,92,.18);
+  box-shadow:0 4px 20px rgba(31,122,92,.2);
 }
 .hero-top{display:flex;align-items:flex-start;justify-content:space-between;gap:1rem;}
 .hero-date{font-size:.78rem;color:rgba(255,255,255,.82);margin-bottom:4px;}
@@ -98,7 +95,7 @@ body{
   font-family:var(--font-body);-webkit-tap-highlight-color:transparent;
 }
 
-/* flat box padrão */
+/* flat boxes */
 .empty-card,
 .event-card,
 .goal-mini,
@@ -194,7 +191,6 @@ body{
   grid-template-columns:repeat(3,1fr);
   gap:.6rem;
 }
-/* Em tablets/desktop, 6 colunas */
 @media(min-width:600px){
   .quick-grid{grid-template-columns:repeat(6,1fr);}
 }
@@ -211,7 +207,7 @@ body{
 .quick-title{font-size:.78rem;font-weight:700;}
 .quick-sub{font-size:.7rem;color:var(--color-text-muted);}
 
-/* ── BOTTOM NAV – sempre grudada no fundo ── */
+/* ── BOTTOM NAV – sempre no fundo ── */
 .bottom-nav{
   position:fixed;
   bottom:0;
@@ -225,6 +221,8 @@ body{
   background:var(--color-surface);
   border-top:1px solid var(--color-border);
   padding-bottom:env(safe-area-inset-bottom,0px);
+  padding-left:var(--side-pad);
+  padding-right:var(--side-pad);
 }
 .nav-item{
   display:flex;flex-direction:column;align-items:center;
