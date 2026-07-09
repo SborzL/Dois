@@ -13,6 +13,7 @@ Este projeto foi desenvolvido por **[Luís Sborz](https://github.com/SborzL)** c
 - 🔐 **Login e cadastro** — autenticação via e-mail e senha
 - 💑 **Conexão de casal** — um gera um código, o outro digita e os dois ficam vinculados
 - 📍 **Lugares** — salve restaurantes, cafés e passeios que vocês querem visitar
+- 🎉 **Roleta** — sorteie um lugar para visitar
 - ✅ **Checklists** — listas compartilhadas de coisas que querem fazer
 - 📅 **Agenda** — marque encontros e eventos no calendário do casal
 - 👤 **Perfil** — gerencie as informações do casal
